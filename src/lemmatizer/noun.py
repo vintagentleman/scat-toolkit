@@ -210,7 +210,9 @@ class NounLemmatizer(Lemmatizer):
 
         # Стемминг (с учётом особого смешения)
         if self.d_new in ("a", "ja", "i") and self.gen == "ср":
-            s_old = self.get_stem(self.reg, (self.d_new, self.case, self.num, "м"), lib.nom_infl)
+            s_old = self.get_stem(
+                self.reg, (self.d_new, self.case, self.num, "м"), lib.nom_infl
+            )
         else:
             s_old = self.get_stem(
                 self.reg, (self.d_new, self.case, self.num, self.gen), lib.nom_infl

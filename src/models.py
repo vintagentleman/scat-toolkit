@@ -98,7 +98,7 @@ class Word:
             if self.pos == "числ/п" and "#" in reg:
                 return reg.replace("(", "").replace(")", "")
 
-        prop, corr = reg.startswith('*'), reg.startswith('~')
+        prop, corr = reg.startswith("*"), reg.startswith("~")
         if prop or corr:
             reg = reg[1:]
 
@@ -115,9 +115,9 @@ class Word:
         reg = modif(reg, self.pos if hasattr(self, "pos") else "")
 
         if prop:
-            reg = '*' + reg
+            reg = "*" + reg
         elif corr:
-            reg = '~' + reg
+            reg = "~" + reg
 
         return reg.replace("#", "")
 

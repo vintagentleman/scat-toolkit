@@ -241,7 +241,9 @@ class VerbLemmatizer(Lemmatizer):
                 if self.pers in ("2", "3") and self.num == "ед":
                     s_old = self.reg
                 else:
-                    s_old = self.get_stem(self.reg, (self.pers, self.num), lib.aor_sigm_infl)
+                    s_old = self.get_stem(
+                        self.reg, (self.pers, self.num), lib.aor_sigm_infl
+                    )
 
                 if s_old is not None:
                     stem, lemma = s_old, "БЫТИ"

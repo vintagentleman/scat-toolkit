@@ -44,7 +44,7 @@ class Converter:
                 ]
 
             with self.writer(
-                Path.joinpath(__root__, "out", f"{filename.stem}.{self.mode}",)
+                Path.joinpath(__root__, "out", f"{filename.stem}.{self.mode}")
             ) as out:
                 for idx, row in df.iterrows():
                     row = Row(row.map(str.strip).to_list())

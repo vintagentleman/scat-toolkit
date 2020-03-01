@@ -103,6 +103,10 @@ class Word:
             if self.pos == "числ/п" and "#" in reg:
                 return reg.replace("(", "").replace(")", "")
 
+        prop, corr = reg.startswith('*'), reg.startswith('~')
+        if prop or corr:
+            reg = reg[1:]
+
         reg = replace_chars(
             reg, "SIWDGUFRLQ", ("З", "И", "О", "У", "У", "У", "Ф", "Я", "КС", "ПС")
         )  # Остаточная нормализация
@@ -112,10 +116,13 @@ class Word:
         ]:  # Позиционная замена ижицы
             reg = reg[:idx] + self._replace_izhitsa(reg, idx) + reg[idx + 1 :]
 
-        reg = modif(  # Нормализация орфографии
-            reg[1:] if reg.startswith(("*", "~")) else reg,
-            self.pos if hasattr(self, "pos") else "",
-        )
+        # Нормализация орфографии
+        reg = modif(reg, self.pos if hasattr(self, "pos") else "")
+
+        if prop:
+            reg = '*' + reg
+        elif corr:
+            reg = '~' + reg
 
         return reg.replace("#", "")
 

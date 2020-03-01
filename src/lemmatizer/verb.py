@@ -35,7 +35,7 @@ class VerbLemmatizer(Lemmatizer):
 
     def _part_el(self):
         # Стемминг
-        s_old = self.get_stem((self.gen, self.num), lib.part_el_infl)
+        s_old = self.get_stem(self.reg, (self.gen, self.num), lib.part_el_infl)
 
         if s_old is None:
             return self.reg, None
@@ -63,7 +63,7 @@ class VerbLemmatizer(Lemmatizer):
 
     def _aor_simp(self):
         # Стемминг
-        s_old = self.get_stem((self.pers, self.num), lib.aor_simp_infl)
+        s_old = self.get_stem(self.reg, (self.pers, self.num), lib.aor_simp_infl)
 
         if s_old is None:
             return self.reg, None
@@ -98,7 +98,7 @@ class VerbLemmatizer(Lemmatizer):
             return self.reg, self.reg + "ТИ"
 
         # Стемминг
-        s_old = self.get_stem((self.pers, self.num), lib.aor_sigm_infl)
+        s_old = self.get_stem(self.reg, (self.pers, self.num), lib.aor_sigm_infl)
 
         if s_old is None:
             return self.reg, None
@@ -131,7 +131,7 @@ class VerbLemmatizer(Lemmatizer):
         return s_old, s_new + "ТИ"
 
     def _present(self):
-        s_old = self.get_stem((self.pers, self.num), lib.pres_infl)
+        s_old = self.get_stem(self.reg, (self.pers, self.num), lib.pres_infl)
 
         if s_old is None:
             return self.reg, None
@@ -214,7 +214,7 @@ class VerbLemmatizer(Lemmatizer):
         return s_old, s_new + "ТИ"
 
     def _imperfect(self):
-        stem = self.get_stem((self.pers, self.num), lib.imperfect_infl)
+        stem = self.get_stem(self.reg, (self.pers, self.num), lib.imperfect_infl)
 
         if stem is None:
             return self.reg, None
@@ -241,7 +241,7 @@ class VerbLemmatizer(Lemmatizer):
                 if self.pers in ("2", "3") and self.num == "ед":
                     s_old = self.reg
                 else:
-                    s_old = self.get_stem((self.pers, self.num), lib.aor_sigm_infl)
+                    s_old = self.get_stem(self.reg, (self.pers, self.num), lib.aor_sigm_infl)
 
                 if s_old is not None:
                     stem, lemma = s_old, "БЫТИ"

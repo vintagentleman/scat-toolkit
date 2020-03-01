@@ -32,11 +32,11 @@ class ParticipleLemmatizer(Lemmatizer):
         # Стемминг
         if self.d_old != "м":
             s_old = self.get_stem(
-                (self.d_new, self.case, self.num, self.gen), lib.nom_infl
+                self.reg, (self.d_new, self.case, self.num, self.gen), lib.nom_infl
             )
         else:
             s_old = self.get_stem(
-                (self.d_new, self.case, self.num, self.gen), lib.pron_infl
+                self.reg, (self.d_new, self.case, self.num, self.gen), lib.pron_infl
             )
 
         if s_old is None:
@@ -75,11 +75,11 @@ class ParticipleLemmatizer(Lemmatizer):
         # Стемминг
         if self.d_old != "тв":
             s_old = self.get_stem(
-                (self.d_new, self.case, self.num, self.gen), lib.nom_infl
+                self.reg, (self.d_new, self.case, self.num, self.gen), lib.nom_infl
             )
         else:
             s_old = self.get_stem(
-                (self.d_new, self.case, self.num, self.gen), lib.pron_infl
+                self.reg, (self.d_new, self.case, self.num, self.gen), lib.pron_infl
             )
 
         if s_old is None:

@@ -1,0 +1,8 @@
+black
+fire
+lxml
+pandas
+pre-commit
+pylint
+pytest
+xlsxwriter

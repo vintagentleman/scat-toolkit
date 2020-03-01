@@ -1,11 +1,6 @@
 /.idea
-/temp
-/txt
-/xml
+/inp
+/out
 
-/*.csv
-/*.txt
-*.bak
-*.dat
-*.dir
-*.xls?
+*.log.*
+*.pyc

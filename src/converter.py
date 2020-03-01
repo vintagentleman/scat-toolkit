@@ -48,13 +48,12 @@ class Converter:
             ) as out:
                 for idx, row in df.iterrows():
                     row = Row(row.map(str.strip).to_list())
+                    word = Word(filename.stem, idx, row.word, row.ana)
 
                     if self.mode == "tsv":
-                        out.write(
-                            row.src, Word(filename.stem, idx, row.word, row.ana).lemma,
-                        )
+                        out.write(row.src, word.pos, *word.msd, word.lemma)
                     elif self.mode == "pkl":
-                        pass
+                        out.write(word.reg, *word.msd)
                     else:
                         out.write(row)
 

@@ -47,12 +47,7 @@ class Word:
                 ana[1:],
             )  # Latin to Cyr
 
-        if (
-            hasattr(self, "pos")
-            and self.pos
-            and not self.pos.isnumeric()
-            and self.pos in ("гл", "гл/в")
-        ):
+        if hasattr(self, "pos") and self.pos and not self.pos.isnumeric():
             self.stem, self.lemma = self.lemmatizer(self).get_lemma()
         else:
             self.stem, self.lemma = self.src, None
@@ -189,6 +184,8 @@ class Word:
                 )  # Mood; Latin to Cyr
 
         if pos != "мест":
+            if pos == "сущ":
+                return noun.NounLemmatizer
             if pos in ("гл", "гл/в"):
                 return verb.VerbLemmatizer
             if pos in ("прич", "прич/в"):

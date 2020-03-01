@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from utils import lib
 
 
-__all__ = ["verb", "participle"]
+__all__ = ["noun", "verb", "participle"]
 
 
 class Lemmatizer(ABC):
@@ -12,14 +12,15 @@ class Lemmatizer(ABC):
         self.reg = w.reg.replace("(", "").replace(")", "")
         self.pos = w.pos
 
-    def get_stem(self, msd: tuple, fl_dict: dict):
+    @staticmethod
+    def get_stem(form, msd: tuple, fl_dict: dict):
         if msd in fl_dict:
-            fl = re.search("({}|`)$".format(fl_dict[msd]), self.reg)
-            return self.reg[: -len(fl.group())] if fl else None
+            fl = re.search("({}|`)$".format(fl_dict[msd]), form)
+            return form[: -len(fl.group())] if fl else None
         raise NotImplementedError
 
     @abstractmethod
-    def get_lemma(self):
+    def get_lemma(self) -> (str, str):
         pass
 
 

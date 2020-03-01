@@ -1,0 +1,6 @@
+/.idea
+/inp
+/out
+
+*.log.*
+*.pyc

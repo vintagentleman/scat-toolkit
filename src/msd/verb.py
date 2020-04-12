@@ -1,10 +1,10 @@
 import re
 
-from utils import lib, letters
-from .lemmatizer import Lemmatizer
+from utils import lib, letters, replace_chars
+from .msd import MSD
 
 
-class VerbLemmatizer(Lemmatizer):
+class Verb(MSD):
     def __init__(self, w):
         super().__init__(w)
         self.refl = self.pos.endswith("/в")
@@ -15,23 +15,23 @@ class VerbLemmatizer(Lemmatizer):
         if self.reg[-1] not in letters.vows:
             self.reg += "`"
 
-        self.mood = w.msd[0]
+        self.mood = replace_chars(w.ana[0], "aeopcyx", "аеорсух")  # Latin to Cyr
 
         if self.mood == "изъяв":
-            self.tense, self.num = w.msd[1], w.msd[3].split("/")[-1]
+            self.tense, self.num = w.ana[1], w.ana[3].split("/")[-1]
             self.pers, self.gen = (
-                (w.msd[2], "") if w.msd[2].isnumeric() else ("", w.msd[2])
+                (w.ana[2], "") if w.ana[2].isnumeric() else ("", w.ana[2])
             )
             self.role, self.cls = (
-                ("", w.msd[4]) if w.msd[4].isnumeric() else (w.msd[4], "")
+                ("", w.ana[4]) if w.ana[4].isnumeric() else (w.ana[4], "")
             )
         elif self.mood == "сосл":
             self.pers, self.gen = (
-                (w.msd[1], "") if w.msd[1].isnumeric() else ("", w.msd[1])
+                (w.ana[1], "") if w.ana[1].isnumeric() else ("", w.ana[1])
             )
-            self.num, self.role = w.msd[2].split("/")[-1], w.msd[3]
+            self.num, self.role = w.ana[2].split("/")[-1], w.ana[3]
         else:
-            self.pers, self.num, self.cls = w.msd[1], w.msd[2], w.msd[3]
+            self.pers, self.num, self.cls = w.ana[1], w.ana[2], w.ana[3]
 
     def _part_el(self):
         # Стемминг
@@ -272,3 +272,7 @@ class VerbLemmatizer(Lemmatizer):
                 lemma += "СЯ"
 
         return stem, lemma
+
+    @property
+    def value(self):
+        return []  # TODO

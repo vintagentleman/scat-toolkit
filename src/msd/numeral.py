@@ -1,9 +1,9 @@
 import re
 from utils import lib, letters
-from .adjective import AdjectiveLemmatizer
+from .adjective import Adjective
 
 
-class NumeralLemmatizer(AdjectiveLemmatizer):
+class Numeral(Adjective):
     @staticmethod
     def _pron_modif(stem):
         if re.match("В[ЪЬ]?С$", stem):

@@ -1,11 +1,14 @@
 import re
-from utils import lib, letters
-from .lemmatizer import Lemmatizer
+from utils import lib, letters, replace_chars
+from .msd import MSD
 
 
-class NounLemmatizer(Lemmatizer):
+class Noun(MSD):
     def __init__(self, w):
         super().__init__(w)
+
+        if w.pos != "мест":
+            w.ana[0] = replace_chars(w.ana[0], "аеоу", "aeoy")  # Cyr to Latin
 
         # Маркер собственности
         self.prop = "*" in self.reg
@@ -30,22 +33,22 @@ class NounLemmatizer(Lemmatizer):
             self.reg += "`"
 
         # Типы склонения: старый для основы, новый для флексии
-        if "/" in w.msd[0] and w.msd[0] != "р/скл":
-            self.d_old, self.d_new = w.msd[0].split("/")
+        if "/" in w.ana[0] and w.ana[0] != "р/скл":
+            self.d_old, self.d_new = w.ana[0].split("/")
         else:
-            self.d_old = self.d_new = w.msd[0]
+            self.d_old = self.d_new = w.ana[0]
 
-        self.case = w.msd[1].split("/")[-1]
+        self.case = w.ana[1].split("/")[-1]
 
         # Pluralia tantum
-        self.pt = w.msd[2] == "pt"
+        self.pt = w.ana[2] == "pt"
         if self.pt:
             self.num = "мн"
         else:
-            self.num = w.msd[2].split("/")[-1] if w.msd[2] != "0" else "ед"
+            self.num = w.ana[2].split("/")[-1] if w.ana[2] != "0" else "ед"
 
-        self.gen = w.msd[3].split("/")[-1] if w.msd[3] != "0" else "м"
-        self.nb = w.msd[4]
+        self.gen = w.ana[3].split("/")[-1] if w.ana[3] != "0" else "м"
+        self.nb = w.ana[4]
 
     def _is_reduced(self):
         return (
@@ -266,3 +269,7 @@ class NounLemmatizer(Lemmatizer):
 
         # Нахождение флексии
         return s_old, s_new + self.get_infl(s_new)
+
+    @property
+    def value(self):
+        return [self.d_old, self.case, self.num, self.gen]

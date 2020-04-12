@@ -1,18 +1,18 @@
 import re
 from utils import lib, letters
-from .lemmatizer import Lemmatizer
+from .msd import MSD
 
 
-class PronounLemmatizer(Lemmatizer):
+class Pronoun(MSD):
     def __init__(self, w):
         super().__init__(w)
 
         if self.reg[-1] not in letters.vows:
             self.reg += "`"
 
-        self.pers = w.msd[1]
-        self.case = w.msd[2].split("/")[-1]
-        self.num = w.msd[3].split("/")[-1] if self.pers != "возвр" else "ед"
+        self.pers = w.ana[1]
+        self.case = w.ana[2].split("/")[-1]
+        self.num = w.ana[3].split("/")[-1] if self.pers != "возвр" else "ед"
 
     def get_lemma(self):
         lemma = None
@@ -31,3 +31,7 @@ class PronounLemmatizer(Lemmatizer):
                 lemma = "ТЫ"
 
         return self.reg, lemma
+
+    @property
+    def value(self):
+        return ["личн", self.pers, self.case, self.num]

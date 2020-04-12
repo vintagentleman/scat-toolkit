@@ -1,9 +1,9 @@
 import re
 from utils import lib, letters
-from .noun import NounLemmatizer
+from .noun import Noun
 
 
-class AdjectiveLemmatizer(NounLemmatizer):
+class Adjective(Noun):
     def _de_comp_suffix(self, stem):
         if (self.case, self.num, self.gen) in (("им", "ед", "м"), ("им", "ед", "ср")):
             return stem

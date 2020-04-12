@@ -1,12 +1,13 @@
 import re
 
-from utils import lib, letters
-from .lemmatizer import Lemmatizer
+from utils import lib, letters, replace_chars
+from .msd import MSD
 
 
-class ParticipleLemmatizer(Lemmatizer):
+class Participle(MSD):
     def __init__(self, w):
         super().__init__(w)
+        w.ana[0] = replace_chars(w.ana[0], "аеоу", "aeoy")  # Cyr to Latin
         self.refl = self.pos.endswith("/в")
 
         if self.refl:
@@ -18,15 +19,15 @@ class ParticipleLemmatizer(Lemmatizer):
         if self.reg[-1] not in letters.vows:
             self.reg += "`"
 
-        if "/" in w.msd[0]:
-            self.d_old, self.d_new = w.msd[0].split("/")
+        if "/" in w.ana[0]:
+            self.d_old, self.d_new = w.ana[0].split("/")
         else:
-            self.d_old = self.d_new = w.msd[0]
+            self.d_old = self.d_new = w.ana[0]
 
-        self.tense = w.msd[1]
-        self.case = w.msd[2].split("/")[-1]
-        self.num = w.msd[3].split("/")[-1]
-        self.gen = w.msd[4].split("/")[-1] if w.msd[4] != "0" else "м"
+        self.tense = w.ana[1]
+        self.case = w.ana[2].split("/")[-1]
+        self.num = w.ana[3].split("/")[-1]
+        self.gen = w.ana[4].split("/")[-1] if w.ana[4] != "0" else "м"
 
     def _act_past(self):
         # Стемминг
@@ -138,3 +139,7 @@ class ParticipleLemmatizer(Lemmatizer):
             lemma += "СЯ"
 
         return stem, lemma
+
+    @property
+    def value(self):
+        return [self.d_old, self.tense, self.case, self.num, self.gen]

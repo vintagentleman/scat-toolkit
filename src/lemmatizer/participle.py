@@ -1,7 +1,7 @@
 import re
 
 from utils import lib, letters
-from . import Lemmatizer, de_jot, cls_cons_modif
+from .lemmatizer import Lemmatizer
 
 
 class ParticipleLemmatizer(Lemmatizer):
@@ -58,13 +58,13 @@ class ParticipleLemmatizer(Lemmatizer):
                     return s_old, s_modif + "ТИ"
 
         # Проблемные классы
-        lemma = cls_cons_modif(s_new)
+        lemma = self.cls_cons_modif(s_new)
         if lemma is not None:
             return s_old, lemma
 
         # Сочетания с йотом
         if s_new.endswith(("Л", "Н", "Р", "Ж", "ЖД", "Ч", "Ш", "ШТ", "Щ")):
-            s_new = de_jot(s_new) + "И"
+            s_new = self.de_jot(s_new) + "И"
         # 4 класс
         elif s_new[-1] in letters.cons or s_new in ("ВЯ", "СТЫ"):
             s_new += "НУ"
@@ -93,13 +93,15 @@ class ParticipleLemmatizer(Lemmatizer):
             s_new = s_new[: -len(suff.group())]
 
         # Проблемные классы
-        lemma = cls_cons_modif(s_new[:-1] + letters.palat_1.get(s_new[-1], s_new[-1]))
+        lemma = self.cls_cons_modif(
+            s_new[:-1] + letters.palat_1.get(s_new[-1], s_new[-1])
+        )
         if lemma is not None:
             return s_old, lemma
 
         # Сочетания с йотом
         if s_new.endswith(("Л", "Н", "Р", "Ж", "ЖД", "Ч", "Ш", "ШТ", "Щ")):
-            s_new = de_jot(s_new) + "И"
+            s_new = self.de_jot(s_new) + "И"
 
         # Чередование /u:/: 'вдохновенный', 'проникновенный'; 'омовенный', 'незабвенный'. Но - 'благословенный'
         elif suff and suff.group().startswith("ЕН"):

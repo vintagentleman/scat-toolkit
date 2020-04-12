@@ -3,7 +3,7 @@ from xml.sax.saxutils import escape
 
 from src import __metadata__
 from modif.modif import modif
-from lemmatizer import *
+from msd import *
 from utils import letters, count_chars, replace_chars, replace_overline_chars
 
 
@@ -42,13 +42,17 @@ class Word:
         )  # Latin to Cyr
 
         if ana is not None:
-            self.pos, self.msd = (
+            self.pos, self.ana = (
                 replace_chars(ana[0], "aeopcyx", "аеорсух"),
                 ana[1:],
             )  # Latin to Cyr
 
+            if "/" in self.pos and not re.search(r"/([внп]|ср)$", self.pos):
+                self.pos = self.pos.split("/")[-1]
+            self.msd = self.msd_cls(self)
+
         if hasattr(self, "pos") and self.pos and not self.pos.isnumeric():
-            self.stem, self.lemma = self.lemmatizer(self).get_lemma()
+            self.stem, self.lemma = self.msd.get_lemma()
         else:
             self.stem, self.lemma = self.src, None
 
@@ -167,35 +171,20 @@ class Word:
             )
 
     @property
-    def lemmatizer(self):
-        pos = self.pos
-
-        if "/" in pos and not re.search(r"/([внп]|ср)$", pos):
-            pos = pos.split("/")[-1]
-
-        if pos != "мест":
-            if pos in ("сущ", "прил", "прил/ср", "числ", "числ/п", "прич", "прич/в"):
-                self.msd[0] = replace_chars(
-                    self.msd[0], "аеоу", "aeoy"
-                )  # Declension; Cyr to Latin
-            elif pos.startswith("гл"):
-                self.msd[0] = replace_chars(
-                    self.msd[0], "aeopcyx", "аеорсух"
-                )  # Mood; Latin to Cyr
-
-        if pos == "сущ":
-            return NounLemmatizer
-        if pos in ("прил", "прил/ср", "числ/п"):
-            return AdjectiveLemmatizer
-        if pos == "числ":
-            return NumeralLemmatizer
-        if pos == "мест":
-            return PronounLemmatizer if self.msd[0] == "личн" else NumeralLemmatizer
-        if pos in ("гл", "гл/в"):
-            return VerbLemmatizer
-        if pos in ("прич", "прич/в"):
-            return ParticipleLemmatizer
-        return Lemmatizer
+    def msd_cls(self):
+        if self.pos == "сущ":
+            return Noun
+        if self.pos in ("прил", "прил/ср", "числ/п"):
+            return Adjective
+        if self.pos == "числ":
+            return Numeral
+        if self.pos == "мест":
+            return Pronoun if self.ana[0] == "личн" else Numeral
+        if self.pos in ("гл", "гл/в"):
+            return Verb
+        if self.pos in ("прич", "прич/в"):
+            return Participle
+        return MSD
 
     def __repr__(self):
         res = f'<w xml:id="{self.doc}.{self.idx}"'
@@ -203,8 +192,8 @@ class Word:
         if hasattr(self, "pos") and not self.pos.isnumeric():
             res += f' pos="{self.pos}"'
 
-            if self.msd[0]:
-                res += f' msd="{";".join(elem for elem in self.msd if elem)}"'
+            if self.ana[0]:
+                res += f' msd="{";".join(elem for elem in self.ana if elem)}"'
             if hasattr(self, "lemma"):
                 res += f' lemma="{str(self.lemma).lower()}"'
 

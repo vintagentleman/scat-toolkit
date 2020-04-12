@@ -3,7 +3,7 @@ import re
 from utils import lib, letters
 
 
-class Lemmatizer:
+class MSD:
     def __init__(self, w):
         self.reg = w.reg.replace("(", "").replace(")", "")
         self.pos = w.pos
@@ -95,3 +95,7 @@ class Lemmatizer:
             lemma = lemma[:-1] + "И"
 
         return self.reg, lemma
+
+    @property
+    def value(self):
+        return []

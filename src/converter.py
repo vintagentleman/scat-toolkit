@@ -51,9 +51,9 @@ class Converter:
                     word = Word(filename.stem, idx, row.word, row.ana)
 
                     if self.mode == "tsv":
-                        out.write(row.src, word.pos, *word.msd, word.lemma)
+                        out.write(row.src, word.pos, *word.msd.value, word.lemma)
                     elif self.mode == "pkl":
-                        out.write(word.reg, *word.msd)
+                        out.write(word.reg, *word.msd.value)
                     else:
                         out.write(row)
 

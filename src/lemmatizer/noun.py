@@ -1,6 +1,6 @@
 import re
 from utils import lib, letters
-from . import Lemmatizer
+from .lemmatizer import Lemmatizer
 
 
 class NounLemmatizer(Lemmatizer):

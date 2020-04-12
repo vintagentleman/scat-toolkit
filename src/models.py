@@ -183,14 +183,19 @@ class Word:
                     self.msd[0], "aeopcyx", "аеорсух"
                 )  # Mood; Latin to Cyr
 
-        if pos != "мест":
-            if pos == "сущ":
-                return noun.NounLemmatizer
-            if pos in ("гл", "гл/в"):
-                return verb.VerbLemmatizer
-            if pos in ("прич", "прич/в"):
-                return participle.ParticipleLemmatizer
-        raise NotImplementedError
+        if pos == "сущ":
+            return NounLemmatizer
+        if pos in ("прил", "прил/ср", "числ/п"):
+            return AdjectiveLemmatizer
+        if pos == "числ":
+            return NumeralLemmatizer
+        if pos == "мест":
+            return PronounLemmatizer if self.msd[0] == "личн" else NumeralLemmatizer
+        if pos in ("гл", "гл/в"):
+            return VerbLemmatizer
+        if pos in ("прич", "прич/в"):
+            return ParticipleLemmatizer
+        return Lemmatizer
 
     def __repr__(self):
         res = f'<w xml:id="{self.doc}.{self.idx}"'

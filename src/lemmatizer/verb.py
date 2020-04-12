@@ -1,7 +1,7 @@
 import re
 
 from utils import lib, letters
-from . import Lemmatizer, de_jot, cls_cons_modif
+from .lemmatizer import Lemmatizer
 
 
 class VerbLemmatizer(Lemmatizer):
@@ -51,7 +51,7 @@ class VerbLemmatizer(Lemmatizer):
                     return s_old, s_modif + "ТИ"
 
         # Проблемные классы
-        lemma = cls_cons_modif(s_new)
+        lemma = self.cls_cons_modif(s_new)
         if lemma is not None:
             return s_old, lemma
 
@@ -79,7 +79,7 @@ class VerbLemmatizer(Lemmatizer):
             s_new = s_new[:-1] + letters.palat_1[s_new[-1]]
 
         # Проблемные классы
-        lemma = cls_cons_modif(s_new)
+        lemma = self.cls_cons_modif(s_new)
         if lemma is not None:
             return s_old, lemma
 
@@ -120,7 +120,7 @@ class VerbLemmatizer(Lemmatizer):
             return s_old, "РЕЩИ"
 
         # Проблемные классы
-        lemma = cls_cons_modif(s_new)
+        lemma = self.cls_cons_modif(s_new)
         if lemma is not None:
             return s_old, lemma
 
@@ -154,7 +154,7 @@ class VerbLemmatizer(Lemmatizer):
         # 1 класс (алгоритм + словари)
         if self.cls == "1":
             # Основы на согласный
-            lemma = cls_cons_modif(
+            lemma = self.cls_cons_modif(
                 s_new[:-1] + letters.palat_1.get(s_new[-1], s_new[-1])
             )
             if lemma is not None:
@@ -170,7 +170,7 @@ class VerbLemmatizer(Lemmatizer):
 
             # Сочетания с йотом
             elif s_new.endswith(("Л", "Н", "Р", "Ж", "ЖД", "Ч", "Ш", "ШТ", "Щ")):
-                s_new = de_jot(s_new) + "И"
+                s_new = self.de_jot(s_new) + "И"
 
             # Основы со вставкой
             elif s_new.endswith(("ДАД", "ЖИВ", "ИД", "ЫД")):

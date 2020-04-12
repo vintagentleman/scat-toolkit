@@ -1,3 +1,4 @@
+import json
 import shelve
 from pathlib import Path
 
@@ -10,9 +11,13 @@ from models import Row, Word
 
 
 class Annotator:
-    def __init__(self, db, inp="raw/*.tsv"):
+    def __init__(self, db="db", inp="*.tsv"):
         self.db = shelve.open(str(Path.joinpath(__root__, "out", db)))
-        self.inp = Path.joinpath(__root__, "inp").glob(inp)
+        self.inp = Path.joinpath(__root__, "inp", "raw").glob(inp)
+
+        self.tagsets = json.load(
+            Path.joinpath(__root__, "src", "utils", "tagsets.json").open(encoding="utf-8")
+        )
 
     def run(self, students=10, workload=250, offset=0):
         for filename in self.inp:
@@ -35,19 +40,24 @@ class Annotator:
                     if all(len(cell) == 0 for cell in row[1:]):
                         sheet.write(i, 0, row[0])
                         line = Row(row.map(str.strip).to_list())
-                        form = Word(filename.stem, i, line.word, line.ana).reg
+                        word = Word(filename.stem, i, line.word, line.ana)
+                        form = word.reg
 
                         if form in self.db:
+                            msd = self.db[form]
+
+                            for cluster in self.tagsets:
+                                if len(set(map(tuple, msd)) & set(map(tuple, cluster))):
+                                    msd = cluster
+
                             # Если разбор один, то помечаем его и не учитываем при подсчёте
-                            if len(self.db[form]) == 1:
+                            if len(msd) == 1:
                                 sheet.write(i, 0, row[0], correct)
-                                sheet.write_row(i, 1, self.db[form][0])
+                                sheet.write_row(i, 1, msd[0])
                                 limit += 1
                             # Если нет, то выделяем неоднозначные позиции
                             else:
-                                msd = zip(*self.db[form])
-
-                                for j, col in enumerate(msd, start=1):
+                                for j, col in enumerate(zip(*msd), start=1):
                                     # Если конфликтов нет, то просто записываем
                                     if col.count(col[0]) == len(col):
                                         sheet.write(i, j, col[0])

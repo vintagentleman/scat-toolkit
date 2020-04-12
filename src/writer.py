@@ -41,7 +41,10 @@ class PKLWriter(Writer):
         self.stream = shelve.open(str(path), writeback=True)
 
     def write(self, *args):
-        self.stream.setdefault(args[0], []).append(args[1:])
+        msd = self.stream.setdefault(args[0], [])
+
+        if args[1:] not in msd:
+            msd.append(args[1:])
 
 
 class XMLWriter(Writer):

@@ -44,7 +44,11 @@ class Converter:
                 ]
 
             with self.writer(
-                Path.joinpath(__root__, "out", f"{filename.stem}.{self.mode}")
+                Path.joinpath(
+                    __root__,
+                    "out",
+                    "db" if self.mode == "pkl" else f"{filename.stem}.{self.mode}",
+                )
             ) as out:
                 for idx, row in df.iterrows():
                     row = Row(row.map(str.strip).to_list())
@@ -53,7 +57,7 @@ class Converter:
                     if self.mode == "tsv":
                         out.write(row.src, word.pos, *word.msd.value, word.lemma)
                     elif self.mode == "pkl":
-                        out.write(word.reg, *word.msd.value)
+                        out.write(word.reg, word.pos, *word.msd.value)
                     else:
                         out.write(row)
 

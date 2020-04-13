@@ -23,7 +23,7 @@ class Verb(MSD):
                 (w.ana[2], "") if w.ana[2].isnumeric() else ("", w.ana[2])
             )
             self.role, self.cls = (
-                ("", w.ana[4]) if w.ana[4].isnumeric() else (w.ana[4], "")
+                ("", w.ana[4].split("/")[-1]) if w.ana[4].isnumeric() else (w.ana[4], "")
             )
         elif self.mood == "сосл":
             self.pers, self.gen = (
@@ -31,7 +31,7 @@ class Verb(MSD):
             )
             self.num, self.role = w.ana[2].split("/")[-1], w.ana[3]
         else:
-            self.pers, self.num, self.cls = w.ana[1], w.ana[2], w.ana[3]
+            self.pers, self.num, self.cls = w.ana[1], w.ana[2], w.ana[3].split("/")[-1]
 
     def _part_el(self):
         # Стемминг
@@ -131,7 +131,11 @@ class Verb(MSD):
         return s_old, s_new + "ТИ"
 
     def _present(self):
-        s_old = self.get_stem(self.reg, (self.pers, self.num), lib.pres_infl)
+        s_old = self.get_stem(
+            self.reg,
+            (self.pers, self.num),
+            lib.pres_infl if self.mood == "изъяв" else lib.imperative_infl
+        )
 
         if s_old is None:
             return self.reg, None
@@ -139,7 +143,7 @@ class Verb(MSD):
         s_new = s_old
 
         # 5 класс (словарь)
-        if self.cls == "5":
+        if self.cls == "5" or s_new.endswith("БУД"):
             for stem in lib.cls_5:
                 if s_new.endswith(stem):
                     # Учёт приставочных дериватов
@@ -148,7 +152,8 @@ class Verb(MSD):
             return s_old, None
 
         # Удаление тематических гласных
-        if (self.pers, self.num) not in (("1", "ед"), ("3", "мн")):
+        if ((self.mood == "изъяв" and (self.pers, self.num) not in (("1", "ед"), ("3", "мн")))
+                or (self.mood == "повел" and (self.pers, self.num) != ("2", "ед"))):
             s_new = s_new[:-1]
 
         # 1 класс (алгоритм + словари)
@@ -203,7 +208,7 @@ class Verb(MSD):
         elif self.cls == "3":
             if s_new.endswith("У"):
                 return s_old, s_new[:-1] + "ОВАТИ"
-            return s_old, None
+            return s_old, s_new + "ТИ"
 
         # 4 класс (вручную + варианты)
         elif self.cls == "4":
@@ -264,6 +269,9 @@ class Verb(MSD):
                 return self.reg, "AUX-SBJ"
             elif self.role.startswith("пр"):
                 stem, lemma = self._part_el()
+
+        elif self.mood == "повел":
+            stem, lemma = self._present()
 
         if lemma not in (None, []) and self.refl:
             if isinstance(lemma, list):

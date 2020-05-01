@@ -216,12 +216,47 @@ class Verb(MSD):
         return s_old, s_new + "ТИ"
 
     def _imperfect(self):
-        stem = self.get_stem(self.reg, (self.pers, self.num), lib.imperfect_infl)
+        # Стемминг
+        s_old = self.get_stem(self.reg, (self.pers, self.num), lib.imperfect_infl)
 
-        if stem is None:
+        if s_old is None:
             return self.reg, None
 
-        return stem, []
+        # Удаление нестяжённых вокалических сочетаний
+        stretch = re.search(r"([+Е][АЯ]|АА|ЯЯ)$", s_old)
+        if stretch:
+            s_old = s_old[:-2] + s_old[-1]
+
+        s_new = s_old[:-1]
+
+        # Основы-исключения
+        for regex in lib.imperfect_spec:
+            mo = re.match(regex, s_new)
+            if mo:
+                s_modif = re.sub(regex, mo.group(1) + lib.imperfect_spec[regex], s_new)
+                if s_new != s_modif:
+                    return s_old, s_modif + "ТИ"
+
+        # Проблемные классы
+        lemma = self.cls_cons_modif(
+            s_new[:-1] + letters.palat_1.get(s_new[-1], s_new[-1])
+        )
+        if lemma is not None:
+            return s_old, lemma
+
+        # Сочетания с йотом
+        s_modif = self.de_jot(s_new)
+        if s_new != s_modif:
+            return s_new, s_modif + "ИТИ"
+
+        # Второе спряжение
+        if s_new in lib.cls_4_a:
+            return s_new, s_new + "АТИ"
+        if s_new in lib.cls_4_e:
+            return s_new, s_new + "+ТИ"
+
+        # Иначе возвращаем форму на гласную
+        return s_old, s_old + "ТИ"
 
     def get_lemma(self):
         stem, lemma = self.reg, None

@@ -43,12 +43,9 @@ class Verb(MSD):
         s_new = s_old
 
         # Основы-исключения
-        for regex in lib.part_el_spec:
-            mo = re.match(regex, s_new)
-            if mo:
-                s_modif = re.sub(regex, mo.group(1) + lib.part_el_spec[regex], s_new)
-                if s_new != s_modif:
-                    return s_old, s_modif + "ТИ"
+        s_modif = self.get_spec_stem(s_new, lib.part_el_spec)
+        if s_new != s_modif:
+            return s_old, s_modif + "ТИ"
 
         # Проблемные классы
         lemma = self.cls_cons_modif(s_new)

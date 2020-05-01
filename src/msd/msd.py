@@ -77,6 +77,17 @@ class MSD:
             return form[: -len(fl.group())] if fl else None
         return None
 
+    @staticmethod
+    def get_spec_stem(stem: str, spec_dict: dict):
+        s_modif = stem
+
+        for regex in spec_dict:
+            mo = re.match(regex, stem)
+            if mo:
+                s_modif = re.sub(regex, mo.group(1) + spec_dict[regex], stem)
+
+        return s_modif
+
     def get_lemma(self) -> (str, str):
         lemma = self.reg.replace("(", "").replace(")", "")
 

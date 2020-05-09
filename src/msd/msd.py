@@ -24,7 +24,7 @@ class MSD:
         elif s.endswith(("Ч", "Щ", "ШТ")):
             prefix = s[:-2] if s.endswith("ШТ") else s[:-1]
 
-            for suffix in ("Т", "СТ"):
+            for suffix in ("Т", "СТ", "СК"):
                 for regex in lib.cnj_2_tsch:
                     if re.search(regex + "$", prefix + suffix):
                         return prefix + suffix
@@ -66,7 +66,7 @@ class MSD:
 
         # VI.2.б и VI.2.в классы
         if re.search("[МПТ][ЕЬ]?Р$", s):
-            return s + "ЕТИ"
+            return s + "+ТИ"
         elif re.search("ШИБ$", s):
             return s + "ИТИ"
 

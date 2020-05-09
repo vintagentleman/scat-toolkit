@@ -16,6 +16,7 @@ class Verb(MSD):
             self.reg += "`"
 
         self.mood = replace_chars(w.ana[0], "aeopcyx", "аеорсух")  # Latin to Cyr
+        self.mood = self.mood.replace("изьяв", "изъяв")
 
         if self.mood == "изъяв":
             self.tense, self.num = w.ana[1], w.ana[3].split("/")[-1]
@@ -23,7 +24,9 @@ class Verb(MSD):
                 (w.ana[2], "") if w.ana[2].isnumeric() else ("", w.ana[2])
             )
             self.role, self.cls = (
-                ("", w.ana[4].split("/")[-1]) if w.ana[4].isnumeric() else (w.ana[4], "")
+                ("", w.ana[4].split("/")[-1])
+                if w.ana[4].isnumeric()
+                else (w.ana[4], "")
             )
         elif self.mood == "сосл":
             self.pers, self.gen = (
@@ -32,6 +35,8 @@ class Verb(MSD):
             self.num, self.role = w.ana[2].split("/")[-1], w.ana[3]
         else:
             self.pers, self.num, self.cls = w.ana[1], w.ana[2], w.ana[3].split("/")[-1]
+
+        self.nb = w.ana[4] if self.mood == "повел" else ""
 
     def _part_el(self):
         # Стемминг
@@ -131,7 +136,7 @@ class Verb(MSD):
         s_old = self.get_stem(
             self.reg,
             (self.pers, self.num),
-            lib.pres_infl if self.mood == "изъяв" else lib.imperative_infl
+            lib.pres_infl if self.mood == "изъяв" else lib.imperative_infl,
         )
 
         if s_old is None:
@@ -146,12 +151,20 @@ class Verb(MSD):
                     # Учёт приставочных дериватов
                     prefix = s_new[: -len(stem)] if len(s_new) != len(stem) else ""
                     return s_old, prefix + lib.cls_5[stem] + "ТИ"
-            return s_old, None
 
         # Удаление тематических гласных
-        if ((self.mood == "изъяв" and (self.pers, self.num) not in (("1", "ед"), ("3", "мн")))
-                or (self.mood == "повел" and (self.pers, self.num) != ("2", "ед"))):
+        if (
+            self.mood == "изъяв"
+            and (self.pers, self.num) not in (("1", "ед"), ("3", "мн"))
+        ) or (self.mood == "повел" and (self.pers, self.num) != ("2", "ед")):
             s_new = s_new[:-1]
+
+        # Вторая палатализация
+        if self.mood == "повел" and "*" in self.nb:
+            s_new = s_new[:-1] + letters.palat_2.get(s_new[-1], s_new[-1])
+
+            if s_new == "РК":
+                s_new = "РЕК"
 
         # 1 класс (алгоритм + словари)
         if self.cls == "1":
@@ -162,37 +175,40 @@ class Verb(MSD):
             if lemma is not None:
                 return s_new, lemma
 
+            # Чередование /u:/
+            mo = re.search("[ОЪ]?В$", s_new)
+            if mo:
+                s_new = s_new[: -len(mo.group())]
+
+                if s_new[-1] == "З":
+                    s_new += "ВА"
+                elif s_new[-1] == "Н":
+                    s_new += "У"
+                else:
+                    s_new += "Ы"
+
             # Чередование носовых
-            if s_new.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
+            elif s_new.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
                 s_new = s_new[:-2] + "Я"
             elif s_new.endswith(("М", "Н")):
                 s_new = s_new[:-1] + (
                     "А" if s_new[:-1].endswith(letters.cons_hush) else "Я"
                 )
 
-            # Сочетания с йотом
-            elif s_new.endswith(("Л", "Н", "Р", "Ж", "ЖД", "Ч", "Ш", "ШТ", "Щ")):
-                s_new = self.de_jot(s_new) + "И"
-
             # Основы со вставкой
             elif s_new.endswith(("ДАД", "ЖИВ", "ИД", "ЫД")):
                 s_new = s_new[:-1]
 
-            # Чередование /u:/
-            else:
-                mo = re.search("[ОЪ]?В$", s_new)
+            # Приставочные дериваты БЫТИ
+            elif s_new.endswith("БУД"):
+                s_new = "БЫ"
 
-                if mo:
-                    s_new = s_new[: -len(mo.group())]
-
-                    if s_new[-1] == "З":
-                        s_new += "ВА"
-                    elif s_new[-1] == "Н":
-                        s_new += "У"
-                    else:
-                        s_new += "Ы"
-                else:
-                    s_new += "И"
+            elif s_new.endswith(letters.cons):
+                s_new = (
+                    s_new[:-2] + s_new[-1] + "А"
+                    if s_new.endswith(("БЕР", "ДЕР", "ЗОВ"))
+                    else s_new + "А"
+                )
 
         # 2 класс (алгоритм)
         elif self.cls == "2":
@@ -201,17 +217,38 @@ class Verb(MSD):
             else:
                 s_new += "У"
 
-        # 3 класс (вручную)
+        # 3 класс (авгоритм + словари)
         elif self.cls == "3":
-            if s_new.endswith("У"):
-                return s_old, s_new[:-1] + "ОВАТИ"
-            return s_old, s_new + "ТИ"
+            if s_new.endswith(letters.vows):
+                if s_new.endswith("У"):
+                    s_new = s_new[:-1] + (
+                        "ЕВА" if s_new.endswith(letters.cons_hush) else "ОВА"
+                    )
+            else:
+                # Сочетания с йотом
+                if s_new.endswith(letters.cons_hush) or s_new.endswith(
+                    letters.cons_sonor
+                ):
+                    s_new = self.de_jot(s_new)
 
-        # 4 класс (вручную + варианты)
+                # Чередование носовых
+                if s_new.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
+                    s_new = s_new[:-2] + "Я"
+
+                elif s_new.endswith(letters.cons):
+                    s_new += "+" if s_new == "ХОТ" else "А"
+
+        # 4 класс (словарь)
         elif self.cls == "4":
-            if s_new.endswith(("Л", "Н", "Р", "Ж", "ЖД", "Ч", "Ш", "ШТ", "Щ")):
-                s_new = de_jot(s_new)
-            return s_old, [s_new + "ЯТИ", s_new + "+ТИ", s_new + "ИТИ"]
+            if s_new.endswith(letters.cons_hush) or s_new.endswith(letters.cons_sonor):
+                s_new = self.de_jot(s_new)
+
+            if any(re.search(regex + "$", s_new) for regex in lib.cls_4_e):
+                s_new += "+"
+            elif any(re.search(regex + "$", s_new) for regex in lib.cls_4_a):
+                s_new += "А" if s_new.endswith(letters.cons_hush) else "Я"
+            else:
+                s_new += "И"
 
         return s_old, s_new + "ТИ"
 

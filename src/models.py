@@ -20,7 +20,7 @@ class Row:
             self.pcl = ""
 
         # Висячие разрывы
-        self.br = re.search(r"[&\\%]$|Z (-?\d+)$", word)
+        self.br = re.search(r"[&\\%]$|Z\s+(-?\d+)$", word)
         if self.br is not None:
             word = word[: self.br.start()].strip()
 
@@ -93,7 +93,7 @@ class Word:
         )  # Удаление ошибочных написаний
 
         # Удаление внутренних разрывов
-        reg = re.sub(r"(Z -?\d+ ?|[.,:;%&[\]\\])", "", reg).strip().upper()
+        reg = re.sub(r"(Z\s+-?\d+\s+|[.,:;%&[\]\\])", "", reg).strip().upper()
 
         # Для цифири нормализация на этом заканчивается
         if hasattr(self, "pos"):
@@ -138,7 +138,7 @@ class Word:
             metadata["line"] += 1
             res = res.replace("&", f'<lb n="{metadata["line"]}"/>', 1)
 
-        pb = re.search(r"Z (-?\d+) ?", self.src)
+        pb = re.search(r"Z\s+(-?\d+)\s+", self.src)
 
         # Замена разрывов колонок и/или страниц
         if "\\" in res or pb:
@@ -152,7 +152,7 @@ class Word:
 
             metadata["line"] = 1
             res = re.sub(
-                r"\\|Z -?\d+ ?",
+                r"\\|Z\s+-?\d+\s+",
                 f'<pb n="{metadata["page"] + metadata["column"]}"/><lb n="1"/>',
                 res,
             )
@@ -164,7 +164,7 @@ class Word:
         if "<" in self.src:
             return self._replace_ascii(
                 re.sub(
-                    r"(Z -?\d+ ?|[*~\[\]%&\\])",
+                    r"(Z\s+-?\d+ ?|[*~\[\]%&\\])",
                     "",
                     self.src[self.src.index("<") + 1 : self.src.index(">")],
                 )

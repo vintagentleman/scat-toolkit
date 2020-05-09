@@ -1,10 +1,12 @@
 import re
 
-from utils import lib, letters, replace_chars
-from .msd import MSD
+import utils.infl
+import utils.spec
+from utils import letters, replace_chars
+from .msd import Verbal
 
 
-class Participle(MSD):
+class Participle(Verbal):
     def __init__(self, w):
         super().__init__(w)
         w.ana[0] = replace_chars(w.ana[0], "аеоу", "aeoy")  # Cyr to Latin
@@ -13,7 +15,7 @@ class Participle(MSD):
         if self.refl:
             self.reg, self.pos = self.reg[:-2], self.pos[:-2]
 
-        if re.match("НЕ(?!ДО)", self.reg):
+        if re.match("НЕ(?!(ДО|НАВИ))", self.reg):
             self.reg = self.reg[2:]
 
         if self.reg[-1] not in letters.vows:
@@ -33,11 +35,13 @@ class Participle(MSD):
         # Стемминг
         if self.d_old != "м":
             s_old = self.get_stem(
-                self.reg, (self.d_new, self.case, self.num, self.gen), lib.nom_infl
+                self.reg, (self.d_new, self.case, self.num, self.gen), utils.infl.noun
             )
         else:
             s_old = self.get_stem(
-                self.reg, (self.d_new, self.case, self.num, self.gen), lib.pron_infl
+                self.reg,
+                (self.d_new, self.case, self.num, self.gen),
+                utils.infl.pronoun,
             )
 
         if s_old is None:
@@ -51,7 +55,7 @@ class Participle(MSD):
             s_new = s_new[: -len(suff.group())]
 
         # Основы-исключения
-        s_modif = self.get_spec_stem(s_new, lib.part_spec)
+        s_modif = self.get_spec_stem(s_new, utils.spec.part)
         if s_new != s_modif:
             return s_old, s_modif + "ТИ"
 
@@ -73,11 +77,13 @@ class Participle(MSD):
         # Стемминг
         if self.d_old != "тв":
             s_old = self.get_stem(
-                self.reg, (self.d_new, self.case, self.num, self.gen), lib.nom_infl
+                self.reg, (self.d_new, self.case, self.num, self.gen), utils.infl.noun
             )
         else:
             s_old = self.get_stem(
-                self.reg, (self.d_new, self.case, self.num, self.gen), lib.pron_infl
+                self.reg,
+                (self.d_new, self.case, self.num, self.gen),
+                utils.infl.pronoun,
             )
 
         if s_old is None:
@@ -124,15 +130,12 @@ class Participle(MSD):
     def get_lemma(self):
         stem, lemma = self.reg, None
 
-        if self.tense == "прош":
-            # Страдательные
-            if self.d_old in ("a", "o", "тв"):
-                stem, lemma = self._pas_past()
-            # Действительные
-            else:
-                stem, lemma = self._act_past()
+        if self.d_old in ("a", "o", "тв"):
+            stem, lemma = self._pas_pres() if self.tense == "наст" else self._pas_past()
+        else:
+            stem, lemma = self._act_pres() if self.tense == "наст" else self._act_past()
 
-        if lemma not in (None, []) and self.refl:
+        if lemma is not None and self.refl:
             lemma += "СЯ"
 
         return stem, lemma

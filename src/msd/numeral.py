@@ -1,5 +1,8 @@
 import re
-from utils import lib, letters
+
+import utils.infl
+import utils.spec
+from utils import letters
 from .adjective import Adjective
 
 
@@ -55,26 +58,28 @@ class Numeral(Adjective):
             ):
                 return self.reg, self._neg("КО") + self._zhe()
             # Проверка на вопросительность
-            if (self.d_old, self.case) in lib.pron_interr and re.match(
-                lib.pron_interr[(self.d_old, self.case)][0], self.reg
+            if (self.d_old, self.case) in utils.infl.pron_interr and re.match(
+                utils.infl.pron_interr[(self.d_old, self.case)][0], self.reg
             ):
                 if self.zhe is not None and "Д" in self.zhe.group():
                     return self.reg, self._neg("КО") + self._zhe()
                 return (
                     self.reg,
-                    self._neg(lib.pron_interr[(self.d_old, self.case)][1])
+                    self._neg(utils.infl.pron_interr[(self.d_old, self.case)][1])
                     + self._zhe(),
                 )
         else:
             # Проверка на изменяемость обеих частей
-            for key in lib.num_spec:
+            for key in utils.spec.numeral:
                 if re.match(key, self.reg):
-                    return self.reg, lib.num_spec[key]
+                    return self.reg, utils.spec.numeral[key]
 
         if self.d_old != "р/скл":
             # Сначала ищем в местоименной парадигме
             s_old = self.get_stem(
-                self.reg, (self.d_new, self.case, self.num, self.gen), lib.pron_infl
+                self.reg,
+                (self.d_new, self.case, self.num, self.gen),
+                utils.infl.pronoun,
             )
 
             # Если не нашли, то обращаемся к именной (актуально прежде всего для им. и вин. п.)
@@ -88,7 +93,7 @@ class Numeral(Adjective):
                             self.num,
                             self.gen,
                         ),
-                        lib.nom_infl,
+                        utils.infl.noun,
                     )
                 elif self.d_new == "м":
                     s_old = self.get_stem(
@@ -99,7 +104,7 @@ class Numeral(Adjective):
                             self.num,
                             self.gen,
                         ),
-                        lib.nom_infl,
+                        utils.infl.noun,
                     )
                 else:
                     s_old = self.get_stem(
@@ -112,7 +117,7 @@ class Numeral(Adjective):
                             if self.d_new in ("a", "ja", "i") and self.gen == "ср"
                             else self.gen,
                         ),
-                        lib.nom_infl,
+                        utils.infl.noun,
                     )
         else:
             s_old = self.get_stem(
@@ -127,7 +132,7 @@ class Numeral(Adjective):
                     self.num,
                     self.gen,
                 ),
-                lib.pron_infl,
+                utils.infl.pronoun,
             )
 
             if s_old is None:
@@ -139,7 +144,7 @@ class Numeral(Adjective):
                         self.num,
                         self.gen,
                     ),
-                    lib.nom_infl,
+                    utils.infl.noun,
                 )
 
         # Обработка основы
@@ -159,8 +164,8 @@ class Numeral(Adjective):
         # Нахождение флексии
         if self.pos == "мест":
             infl = (
-                lib.pron_spec[s_new]
-                if s_new in lib.pron_spec
+                utils.spec.pronoun[s_new]
+                if s_new in utils.spec.pronoun
                 else super().get_infl(s_new)
             )
         else:

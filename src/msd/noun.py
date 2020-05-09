@@ -1,5 +1,8 @@
 import re
-from utils import lib, letters, replace_chars
+
+import utils.infl
+import utils.spec
+from utils import letters, replace_chars
 from .msd import MSD
 
 
@@ -90,9 +93,9 @@ class Noun(MSD):
         return stem
 
     def __remove_suffix(self, stem):
-        for th in lib.them_suff:
+        for th in utils.spec.noun_them_suff:
             if th in (self.d_old, self.d_new):
-                suffix = re.search(lib.them_suff[th], stem)
+                suffix = re.search(utils.spec.noun_them_suff[th], stem)
                 if suffix:
                     stem = stem[: -len(suffix.group())]
 
@@ -102,13 +105,13 @@ class Noun(MSD):
         if self.d_old == "en" and not (
             stem.endswith("ЕН") or re.match("Д[ЪЬ]?Н", stem)
         ):
-            suffix = re.search(lib.them_suff[self.d_old], stem)
+            suffix = re.search(utils.spec.noun_them_suff[self.d_old], stem)
             if suffix:
                 stem = stem[: -len(suffix.group())]
             stem += "ЕН"
 
         elif self.d_old == "uu" and not stem.endswith("ОВ"):
-            suffix = re.search(lib.them_suff[self.d_old], stem)
+            suffix = re.search(utils.spec.noun_them_suff[self.d_old], stem)
             if suffix:
                 stem = stem[: -len(suffix.group())]
             stem += "ОВ"
@@ -207,18 +210,18 @@ class Noun(MSD):
 
     def get_lemma(self):
         # Проверка на исключительность
-        for key in lib.noun_spec:
+        for key in utils.spec.noun:
             if re.match(key, self.reg):
-                return self.reg, lib.noun_spec[key][0] + lib.noun_spec[key][1]
+                return self.reg, utils.spec.noun[key][0] + utils.spec.noun[key][1]
 
         # Стемминг (с учётом особого смешения)
         if self.d_new in ("a", "ja", "i") and self.gen == "ср":
             s_old = self.get_stem(
-                self.reg, (self.d_new, self.case, self.num, "м"), lib.nom_infl
+                self.reg, (self.d_new, self.case, self.num, "м"), utils.infl.noun
             )
         else:
             s_old = self.get_stem(
-                self.reg, (self.d_new, self.case, self.num, self.gen), lib.nom_infl
+                self.reg, (self.d_new, self.case, self.num, self.gen), utils.infl.noun
             )
 
         if s_old is None:
@@ -228,7 +231,7 @@ class Noun(MSD):
         s_new, grd = self._check_grd(s_old)
         if grd is not None:
             s_new = self.get_stem(
-                s_new, (self.d_new, self.case, self.num, self.gen), lib.nom_infl
+                s_new, (self.d_new, self.case, self.num, self.gen), utils.infl.noun
             )
 
         # Обработка основы

@@ -1,10 +1,13 @@
 import re
 
-from utils import lib, letters, replace_chars
-from .msd import MSD
+import utils.infl
+import utils.spec
+import utils.verbs
+from utils import letters, replace_chars
+from .msd import Verbal
 
 
-class Verb(MSD):
+class Verb(Verbal):
     def __init__(self, w):
         super().__init__(w)
         self.refl = self.pos.endswith("/в")
@@ -40,7 +43,7 @@ class Verb(MSD):
 
     def _part_el(self):
         # Стемминг
-        s_old = self.get_stem(self.reg, (self.gen, self.num), lib.part_el_infl)
+        s_old = self.get_stem(self.reg, (self.gen, self.num), utils.infl.part_el)
 
         if s_old is None:
             return self.reg, None
@@ -48,7 +51,7 @@ class Verb(MSD):
         s_new = s_old
 
         # Основы-исключения
-        s_modif = self.get_spec_stem(s_new, lib.part_el_spec)
+        s_modif = self.get_spec_stem(s_new, utils.spec.part_el)
         if s_new != s_modif:
             return s_old, s_modif + "ТИ"
 
@@ -65,7 +68,7 @@ class Verb(MSD):
 
     def _aor_simp(self):
         # Стемминг
-        s_old = self.get_stem(self.reg, (self.pers, self.num), lib.aor_simp_infl)
+        s_old = self.get_stem(self.reg, (self.pers, self.num), utils.infl.aorist_simple)
 
         if s_old is None:
             return self.reg, None
@@ -100,7 +103,7 @@ class Verb(MSD):
             return self.reg, self.reg + "ТИ"
 
         # Стемминг
-        s_old = self.get_stem(self.reg, (self.pers, self.num), lib.aor_sigm_infl)
+        s_old = self.get_stem(self.reg, (self.pers, self.num), utils.infl.aorist_sigm)
 
         if s_old is None:
             return self.reg, None
@@ -136,7 +139,7 @@ class Verb(MSD):
         s_old = self.get_stem(
             self.reg,
             (self.pers, self.num),
-            lib.pres_infl if self.mood == "изъяв" else lib.imperative_infl,
+            utils.infl.present if self.mood == "изъяв" else utils.infl.imperative,
         )
 
         if s_old is None:
@@ -146,11 +149,11 @@ class Verb(MSD):
 
         # 5 класс (словарь)
         if self.cls == "5" or s_new.endswith("БУД"):
-            for stem in lib.cls_5:
+            for stem in utils.verbs.cls_5:
                 if s_new.endswith(stem):
                     # Учёт приставочных дериватов
                     prefix = s_new[: -len(stem)] if len(s_new) != len(stem) else ""
-                    return s_old, prefix + lib.cls_5[stem] + "ТИ"
+                    return s_old, prefix + utils.verbs.cls_5[stem] + "ТИ"
 
         # Удаление тематических гласных
         if (
@@ -243,9 +246,9 @@ class Verb(MSD):
             if s_new.endswith(letters.cons_hush) or s_new.endswith(letters.cons_sonor):
                 s_new = self.de_jot(s_new)
 
-            if any(re.search(regex + "$", s_new) for regex in lib.cls_4_e):
+            if any(re.search(regex + "$", s_new) for regex in utils.verbs.cls_4_e):
                 s_new += "+"
-            elif any(re.search(regex + "$", s_new) for regex in lib.cls_4_a):
+            elif any(re.search(regex + "$", s_new) for regex in utils.verbs.cls_4_a):
                 s_new += "А" if s_new.endswith(letters.cons_hush) else "Я"
             else:
                 s_new += "И"
@@ -254,7 +257,7 @@ class Verb(MSD):
 
     def _imperfect(self):
         # Стемминг
-        s_old = self.get_stem(self.reg, (self.pers, self.num), lib.imperfect_infl)
+        s_old = self.get_stem(self.reg, (self.pers, self.num), utils.infl.imperfect)
 
         if s_old is None:
             return self.reg, None
@@ -267,10 +270,12 @@ class Verb(MSD):
         s_new = s_old[:-1]
 
         # Основы-исключения
-        for regex in lib.imperfect_spec:
+        for regex in utils.spec.imperfect:
             mo = re.match(regex, s_new)
             if mo:
-                s_modif = re.sub(regex, mo.group(1) + lib.imperfect_spec[regex], s_new)
+                s_modif = re.sub(
+                    regex, mo.group(1) + utils.spec.imperfect[regex], s_new
+                )
                 if s_new != s_modif:
                     return s_old, s_modif + "ТИ"
 
@@ -287,9 +292,9 @@ class Verb(MSD):
             return s_new, s_modif + "ИТИ"
 
         # Второе спряжение
-        if s_new in lib.cls_4_a:
+        if s_new in utils.verbs.cls_4_a:
             return s_new, s_new + "АТИ"
-        if s_new in lib.cls_4_e:
+        if s_new in utils.verbs.cls_4_e:
             return s_new, s_new + "+ТИ"
 
         # Иначе возвращаем форму на гласную
@@ -297,6 +302,19 @@ class Verb(MSD):
 
     def get_lemma(self):
         stem, lemma = self.reg, None
+
+        if hasattr(self, "role") and self.role == "св":
+            if self.mood == "сосл":
+                return self.reg, "AUX-SBJ"
+            if self.tense == "перф":
+                return self.reg, "AUX-PRF"
+            if self.tense == "плюскв":
+                return self.reg, "AUX-PQP"
+
+            mo = re.match(r"буд ?([12])", self.tense)
+            if mo:
+                return self.reg, "AUX-FT" + mo.group()
+            return self.reg, None
 
         if self.mood == "изъяв":
             # Простые времена
@@ -316,7 +334,7 @@ class Verb(MSD):
                     s_old = self.reg
                 else:
                     s_old = self.get_stem(
-                        self.reg, (self.pers, self.num), lib.aor_sigm_infl
+                        self.reg, (self.pers, self.num), utils.infl.aorist_sigm
                     )
 
                 if s_old is not None:
@@ -324,29 +342,19 @@ class Verb(MSD):
 
             # Сложные времена
             elif re.match("перф|плюскв|буд ?[12]", self.tense):
-                if self.role.endswith("св"):
-                    if self.tense in lib.ana_tenses:
-                        return self.reg, lib.ana_tenses[self.tense]
-                    return self.reg, None
-                elif self.role == "инф":
+                if self.role == "инф":
                     return self.reg, self.reg
-                elif self.role.startswith("пр"):
+                if self.role.startswith("пр"):
                     stem, lemma = self._part_el()
 
-        elif self.mood == "сосл":
-            if self.role == "св":
-                return self.reg, "AUX-SBJ"
-            elif self.role.startswith("пр"):
-                stem, lemma = self._part_el()
+        elif self.mood == "сосл" and self.role.startswith("пр"):
+            stem, lemma = self._part_el()
 
         elif self.mood == "повел":
             stem, lemma = self._present()
 
-        if lemma not in (None, []) and self.refl:
-            if isinstance(lemma, list):
-                lemma = [var + "СЯ" for var in lemma]
-            else:
-                lemma += "СЯ"
+        if lemma is not None and self.refl:
+            lemma += "СЯ"
 
         return stem, lemma
 

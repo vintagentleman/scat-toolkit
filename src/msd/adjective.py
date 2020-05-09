@@ -1,5 +1,7 @@
 import re
-from utils import lib, letters
+
+import utils.infl
+from utils import letters
 from .noun import Noun
 
 
@@ -23,7 +25,7 @@ class Adjective(Noun):
         s_old = self.get_stem(
             self.reg,
             (self.d_new, self.case, self.num, self.gen),
-            lib.nom_infl if self.d_old not in ("м", "тв") else lib.pron_infl,
+            utils.infl.noun if self.d_old not in ("м", "тв") else utils.infl.pronoun,
         )
 
         if s_old is None:

@@ -1,3 +1,4 @@
+import functools
 import re
 
 
@@ -79,3 +80,13 @@ def replace_overline_chars(match):
         ),
     )
     return "҇" + res if match.group(1).islower() else res
+
+
+def skip_none(fun):
+    @functools.wraps(fun)
+    def wrapped(*args, **kwargs):
+        if args[1] is None:
+            return args[1], None
+        return fun(*args, **kwargs)
+
+    return wrapped

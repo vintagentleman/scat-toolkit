@@ -117,9 +117,93 @@ class Verb(Verbal):
 
         return stem + "ТИ"
 
+    def cls_1(self, stem) -> str:
+        # Основы на согласный
+        lemma = self.modify_cons_stem(
+            stem[:-1] + letters.palat_1.get(stem[-1], stem[-1])
+        )
+        if lemma is not None:
+            return lemma
+
+        # Чередование /u:/
+        mo = re.search("[ОЪ]?В$", stem)
+        if mo:
+            stem = stem[: -len(mo.group())]
+
+            if stem[-1] == "З":
+                stem += "ВА"
+            elif stem[-1] == "Н":
+                stem += "У"
+            else:
+                stem += "Ы"
+
+        # Чередование носовых
+        elif stem.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
+            stem = stem[:-2] + "Я"
+        elif stem.endswith(("М", "Н")):
+            stem = stem[:-1] + ("А" if stem[:-1].endswith(letters.cons_hush) else "Я")
+
+        # Основы со вставкой
+        elif stem.endswith(utils.verbs.cls_vii_2):
+            stem = stem[:-1]
+
+        # Приставочные дериваты БЫТИ
+        elif stem.endswith("БУД"):
+            stem = "БЫ"
+
+        elif stem.endswith(letters.cons):
+            stem = (
+                stem[:-2] + stem[-1] + "А"
+                if stem.endswith(utils.verbs.cls_v_1_d)
+                else stem + "А"
+            )
+
+        return stem + "ТИ"
+
+    def cls_2(self, stem) -> str:
+        if stem.endswith(utils.verbs.cls_vii_3):
+            stem = stem[:-1]
+        else:
+            stem += "У"
+
+        return stem + "ТИ"
+
+    def cls_3(self, stem) -> str:
+        if stem.endswith(letters.vows):
+            if stem.endswith("У"):
+                stem = stem[:-1] + (
+                    "ЕВА" if stem.endswith(letters.cons_hush) else "ОВА"
+                )
+        else:
+            # Сочетания с йотом
+            if stem.endswith(letters.cons_hush) or stem.endswith(letters.cons_sonor):
+                stem = self.modify_jotted_stem(stem)
+
+            # Чередование носовых
+            if stem.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
+                stem = stem[:-2] + "Я"
+
+            elif stem.endswith(letters.cons):
+                stem += "+" if stem == "ХОТ" else "А"
+
+        return stem + "ТИ"
+
+    def cls_4(self, stem) -> str:
+        if stem.endswith(letters.cons_hush) or stem.endswith(letters.cons_sonor):
+            stem = self.modify_jotted_stem(stem)
+
+        if any(re.search(regex + "$", stem) for regex in utils.verbs.cls_x_e):
+            stem += "+"
+        elif any(re.search(regex + "$", stem) for regex in utils.verbs.cls_x_a):
+            stem += "А" if stem.endswith(letters.cons_hush) else "Я"
+        else:
+            stem += "И"
+
+        return stem + "ТИ"
+
     @skip_none
     def _present(self, stem) -> str:
-        # 5 класс (словарь)
+        # 5 класс
         if self.cls == "5" or stem.endswith("БУД"):
             for s in utils.verbs.isol:
                 if stem.endswith(s):
@@ -134,91 +218,10 @@ class Verb(Verbal):
         ):
             stem = stem[:-1]
 
-        # 1 класс (алгоритм + словари)
-        if self.cls == "1":
-            # Основы на согласный
-            lemma = self.modify_cons_stem(
-                stem[:-1] + letters.palat_1.get(stem[-1], stem[-1])
-            )
-            if lemma is not None:
-                return lemma
-
-            # Чередование /u:/
-            mo = re.search("[ОЪ]?В$", stem)
-            if mo:
-                stem = stem[: -len(mo.group())]
-
-                if stem[-1] == "З":
-                    stem += "ВА"
-                elif stem[-1] == "Н":
-                    stem += "У"
-                else:
-                    stem += "Ы"
-
-            # Чередование носовых
-            elif stem.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
-                stem = stem[:-2] + "Я"
-            elif stem.endswith(("М", "Н")):
-                stem = stem[:-1] + (
-                    "А" if stem[:-1].endswith(letters.cons_hush) else "Я"
-                )
-
-            # Основы со вставкой
-            elif stem.endswith(utils.verbs.cls_vii_2):
-                stem = stem[:-1]
-
-            # Приставочные дериваты БЫТИ
-            elif stem.endswith("БУД"):
-                stem = "БЫ"
-
-            elif stem.endswith(letters.cons):
-                stem = (
-                    stem[:-2] + stem[-1] + "А"
-                    if stem.endswith(utils.verbs.cls_v_1_d)
-                    else stem + "А"
-                )
-
-        # 2 класс (алгоритм)
-        elif self.cls == "2":
-            if stem.endswith(utils.verbs.cls_vii_3):
-                stem = stem[:-1]
-            else:
-                stem += "У"
-
-        # 3 класс (авгоритм + словари)
-        elif self.cls == "3":
-            if stem.endswith(letters.vows):
-                if stem.endswith("У"):
-                    stem = stem[:-1] + (
-                        "ЕВА" if stem.endswith(letters.cons_hush) else "ОВА"
-                    )
-            else:
-                # Сочетания с йотом
-                if stem.endswith(letters.cons_hush) or stem.endswith(
-                    letters.cons_sonor
-                ):
-                    stem = self.modify_jotted_stem(stem)
-
-                # Чередование носовых
-                if stem.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
-                    stem = stem[:-2] + "Я"
-
-                elif stem.endswith(letters.cons):
-                    stem += "+" if stem == "ХОТ" else "А"
-
-        # 4 класс (словарь)
-        elif self.cls == "4":
-            if stem.endswith(letters.cons_hush) or stem.endswith(letters.cons_sonor):
-                stem = self.modify_jotted_stem(stem)
-
-            if any(re.search(regex + "$", stem) for regex in utils.verbs.cls_x_e):
-                stem += "+"
-            elif any(re.search(regex + "$", stem) for regex in utils.verbs.cls_x_a):
-                stem += "А" if stem.endswith(letters.cons_hush) else "Я"
-            else:
-                stem += "И"
-
-        return stem + "ТИ"
+        try:
+            return getattr(self, "cls_" + self.cls)(stem)
+        except AttributeError:
+            return "None"
 
     @skip_none
     def _imperative(self, stem) -> str:

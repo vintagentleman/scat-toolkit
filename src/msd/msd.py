@@ -54,53 +54,59 @@ class MSD:
 
 class Verbal(MSD):
     @staticmethod
-    def de_jot(s):
+    def modify_jotted_stem(s):
         if s.endswith(("БЛ", "ВЛ", "МЛ", "ПЛ", "ФЛ")):
             return s[:-1]
 
-        elif s.endswith(("Ж", "ЖД")):
-            prefix = s[:-2] if s.endswith("ЖД") else s[:-1]
+        if s.endswith(("Ж", "ЖД")):
+            stem = s[:-2] if s.endswith("ЖД") else s[:-1]
 
-            for suffix in ("Д", "З", "ЗД"):
-                for regex in utils.verbs.jotted_zh:
-                    if re.search(regex + "$", prefix + suffix):
-                        return prefix + suffix
+            for cons in ("Д", "З", "ЗД"):
+                if any(
+                    re.search(regex + "$", stem + cons)
+                    for regex in utils.verbs.jotted_zh
+                ):
+                    return stem + cons
 
         elif s.endswith(("Ч", "Щ", "ШТ")):
-            prefix = s[:-2] if s.endswith("ШТ") else s[:-1]
+            stem = s[:-2] if s.endswith("ШТ") else s[:-1]
 
-            for suffix in ("Т", "СТ", "СК"):
-                for regex in utils.verbs.jotted_tsch:
-                    if re.search(regex + "$", prefix + suffix):
-                        return prefix + suffix
+            for cons in ("Т", "СТ", "СК"):
+                if any(
+                    re.search(regex + "$", stem + cons)
+                    for regex in utils.verbs.jotted_tsch
+                ):
+                    return stem + cons
 
-        elif s.endswith("Ш"):
-            for regex in utils.verbs.jotted_sch:
-                if re.search(regex + "$", s[:-1] + "С"):
-                    return s[:-1] + "С"
+        elif s.endswith("Ш") and any(
+            re.search(regex + "$", s[:-1] + "С") for regex in utils.verbs.jotted_sch
+        ):
+            return s[:-1] + "С"
 
         return s
 
     @staticmethod
-    def cls_cons_modif(s):
-        # VII.1 класс
-        if re.search("(БЛЮ|БРЕ|КЛА|КЛЯ|КРА|ПЛЕ|ВЕ|МЕ|ПА|СЕ|ЧЕ)$", s):
+    def modify_cons_stem(s):
+        # Подкласс VII/1
+        if re.search(r"({})$".format("|".join(utils.verbs.cls_vii_1)), s):
             return s + "СТИ"
 
-        # VI.2.а и VII.1 классы: основы на согласный
-        for regex in utils.verbs.on_sti:
-            mo = re.match("(.*)%s$" % regex, s)
+        # Группа VI/2/а и подкласс VII/1
+        for regex in utils.verbs.cls_vi_2_a:
+            mo = re.match(r"(.*){}$".format(regex), s)
             if mo:
                 return (
                     re.sub(
-                        "(.*)%s$" % regex, mo.group(1) + utils.verbs.on_sti[regex], s
+                        "(.*){}$".format(regex),
+                        mo.group(1) + utils.verbs.cls_vi_2_a[regex],
+                        s,
                     )
                     + "ТИ"
                 )
 
-        # VI.1 класс
-        for regex in utils.verbs.on_tschi:
-            if re.search("%s$" % regex, s):
+        # Подкласс VI/1
+        for regex in utils.verbs.cls_vi_1:
+            if re.search(r"{}$".format(regex), s):
                 s = s[:-1]
 
                 # Чередование с нулём
@@ -111,8 +117,9 @@ class Verbal(MSD):
 
                 return s + "ЩИ"
 
-        # VI.2.б и VI.2.в классы
+        # Группа VI/2/б
         if re.search("[МПТ][ЕЬ]?Р$", s):
             return s + "+ТИ"
-        elif re.search("ШИБ$", s):
+        # Группа VI/2/в
+        if re.search("ШИБ$", s):
             return s + "ИТИ"

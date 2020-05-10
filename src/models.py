@@ -51,10 +51,11 @@ class Word:
                 self.pos = self.pos.split("/")[-1]
             self.msd = self.msd_cls(self)
 
-        if hasattr(self, "pos") and self.pos and not self.pos.isnumeric():
-            self.stem, self.lemma = self.msd.get_lemma()
-        else:
-            self.stem, self.lemma = self.src, None
+        self.lemma = (
+            self.msd.get_lemma()
+            if hasattr(self, "pos") and self.pos and not self.pos.isnumeric()
+            else "None"
+        )
 
     @staticmethod
     def _replace_ascii(s):

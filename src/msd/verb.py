@@ -40,289 +40,279 @@ class Verb(Verbal):
             self.pers, self.num, self.cls = w.ana[1], w.ana[2], w.ana[3].split("/")[-1]
 
     @skip_none
-    def _part_el(self, s_old):
-        if s_old is None:
-            return self.reg, None
-
-        s_new = s_old
+    def _part_el(self, stem) -> str:
+        if stem is None:
+            return "None"
 
         # Основы-исключения
-        s_modif = self.get_spec_stem(s_new, utils.spec.part_el)
-        if s_new != s_modif:
-            return s_old, s_modif + "ТИ"
+        s_modif = self.get_spec_stem(stem, utils.spec.part_el)
+        if stem != s_modif:
+            return s_modif + "ТИ"
 
         # Основы на согласный
-        lemma = self.modify_cons_stem(s_new)
+        lemma = self.modify_cons_stem(stem)
         if lemma is not None:
-            return s_old, lemma
+            return lemma
 
         # 4 класс
-        if s_new[-1] in letters.cons or s_new in utils.verbs.cls_iv_vow:
-            s_new += "НУ"
+        if stem[-1] in letters.cons or stem in utils.verbs.cls_iv_vow:
+            stem += "НУ"
 
-        return s_old, s_new + "ТИ"
+        return stem + "ТИ"
 
     @skip_none
-    def _aor_simp(self, s_old):
-        s_new = s_old
-
+    def _aor_simp(self, stem) -> str:
         # Основы настоящего времени
-        if s_new.endswith(utils.verbs.cls_vii_2):
-            s_new = s_new[:-1]
+        if stem.endswith(utils.verbs.cls_vii_2):
+            stem = stem[:-1]
 
         # Первая палатализация
-        if s_new[-1] in "ЧЖШ":
-            s_new = s_new[:-1] + letters.palat_1[s_new[-1]]
+        if stem[-1] in "ЧЖШ":
+            stem = stem[:-1] + letters.palat_1[stem[-1]]
 
         # Основы на согласный
-        lemma = self.modify_cons_stem(s_new)
+        lemma = self.modify_cons_stem(stem)
         if lemma is not None:
-            return s_old, lemma
+            return lemma
 
         # 4 класс
-        if s_new[-1] in letters.cons or s_new in utils.verbs.cls_iv_vow:
-            s_new += "НУ"
+        if stem[-1] in letters.cons or stem in utils.verbs.cls_iv_vow:
+            stem += "НУ"
 
-        return s_old, s_new + "ТИ"
+        return stem + "ТИ"
 
-    def _aor_sigm(self, s_old):
+    def _aor_sigm(self, stem) -> str:
         # Простейший случай
         if self.tense == "аор гл" and self.pers in ("2", "3") and self.num == "ед":
             mo = re.search("С?Т[ЪЬ`]$", self.reg)
             if mo:
-                return self.reg, self.reg[: -len(mo.group())] + "ТИ"
-            return self.reg, self.reg + "ТИ"
+                return self.reg[: -len(mo.group())] + "ТИ"
+            return self.reg + "ТИ"
 
-        if s_old is None:
-            return s_old, None
+        if stem is None:
+            return "None"
 
         # Осложнение тематического суффикса
-        if self.tense == "аор нов" and s_old.endswith("О"):
-            s_old = s_old[:-1]
+        if self.tense == "аор нов" and stem.endswith("О"):
+            stem = stem[:-1]
         elif self.tense == "аор гл":
-            return s_old, s_old + "ТИ"
-
-        s_new = s_old
+            return stem + "ТИ"
 
         # Основы настоящего времени
-        if s_new.endswith(utils.verbs.cls_vii_2):
-            s_new = s_new[:-1]
+        if stem.endswith(utils.verbs.cls_vii_2):
+            stem = stem[:-1]
 
         # Удлинение корневого гласного
-        if self.tense == "аор сигм" and s_new == "Р+":
-            return s_old, "РЕЩИ"
+        if self.tense == "аор сигм" and stem == "Р+":
+            return "РЕЩИ"
 
         # Основы на согласный
-        lemma = self.modify_cons_stem(s_new)
+        lemma = self.modify_cons_stem(stem)
         if lemma is not None:
-            return s_old, lemma
+            return lemma
 
         # 4 класс
-        if s_new[-1] in letters.cons or s_new in utils.verbs.cls_iv_vow:
-            s_new += "НУ"
+        if stem[-1] in letters.cons or stem in utils.verbs.cls_iv_vow:
+            stem += "НУ"
 
-        return s_old, s_new + "ТИ"
+        return stem + "ТИ"
 
     @skip_none
-    def _present(self, s_old):
-        s_new = s_old
-
+    def _present(self, stem) -> str:
         # 5 класс (словарь)
-        if self.cls == "5" or s_new.endswith("БУД"):
-            for stem in utils.verbs.isol:
-                if s_new.endswith(stem):
+        if self.cls == "5" or stem.endswith("БУД"):
+            for s in utils.verbs.isol:
+                if stem.endswith(s):
                     # Учёт приставочных дериватов
-                    prefix = s_new[: -len(stem)] if len(s_new) != len(stem) else ""
-                    return s_old, prefix + utils.verbs.isol[stem] + "ТИ"
+                    prefix = stem[: -len(s)] if len(stem) != len(s) else ""
+                    return prefix + utils.verbs.isol[s] + "ТИ"
 
         # Удаление тематических гласных
         if self.mood == "изъяв" and (self.pers, self.num) not in (
             ("1", "ед"),
             ("3", "мн"),
         ):
-            s_new = s_new[:-1]
+            stem = stem[:-1]
 
         # 1 класс (алгоритм + словари)
         if self.cls == "1":
             # Основы на согласный
             lemma = self.modify_cons_stem(
-                s_new[:-1] + letters.palat_1.get(s_new[-1], s_new[-1])
+                stem[:-1] + letters.palat_1.get(stem[-1], stem[-1])
             )
             if lemma is not None:
-                return s_new, lemma
+                return lemma
 
             # Чередование /u:/
-            mo = re.search("[ОЪ]?В$", s_new)
+            mo = re.search("[ОЪ]?В$", stem)
             if mo:
-                s_new = s_new[: -len(mo.group())]
+                stem = stem[: -len(mo.group())]
 
-                if s_new[-1] == "З":
-                    s_new += "ВА"
-                elif s_new[-1] == "Н":
-                    s_new += "У"
+                if stem[-1] == "З":
+                    stem += "ВА"
+                elif stem[-1] == "Н":
+                    stem += "У"
                 else:
-                    s_new += "Ы"
+                    stem += "Ы"
 
             # Чередование носовых
-            elif s_new.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
-                s_new = s_new[:-2] + "Я"
-            elif s_new.endswith(("М", "Н")):
-                s_new = s_new[:-1] + (
-                    "А" if s_new[:-1].endswith(letters.cons_hush) else "Я"
+            elif stem.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
+                stem = stem[:-2] + "Я"
+            elif stem.endswith(("М", "Н")):
+                stem = stem[:-1] + (
+                    "А" if stem[:-1].endswith(letters.cons_hush) else "Я"
                 )
 
             # Основы со вставкой
-            elif s_new.endswith(utils.verbs.cls_vii_2):
-                s_new = s_new[:-1]
+            elif stem.endswith(utils.verbs.cls_vii_2):
+                stem = stem[:-1]
 
             # Приставочные дериваты БЫТИ
-            elif s_new.endswith("БУД"):
-                s_new = "БЫ"
+            elif stem.endswith("БУД"):
+                stem = "БЫ"
 
-            elif s_new.endswith(letters.cons):
-                s_new = (
-                    s_new[:-2] + s_new[-1] + "А"
-                    if s_new.endswith(utils.verbs.cls_v_1_d)
-                    else s_new + "А"
+            elif stem.endswith(letters.cons):
+                stem = (
+                    stem[:-2] + stem[-1] + "А"
+                    if stem.endswith(utils.verbs.cls_v_1_d)
+                    else stem + "А"
                 )
 
         # 2 класс (алгоритм)
         elif self.cls == "2":
-            if s_new.endswith(utils.verbs.cls_vii_3):
-                s_new = s_new[:-1]
+            if stem.endswith(utils.verbs.cls_vii_3):
+                stem = stem[:-1]
             else:
-                s_new += "У"
+                stem += "У"
 
         # 3 класс (авгоритм + словари)
         elif self.cls == "3":
-            if s_new.endswith(letters.vows):
-                if s_new.endswith("У"):
-                    s_new = s_new[:-1] + (
-                        "ЕВА" if s_new.endswith(letters.cons_hush) else "ОВА"
+            if stem.endswith(letters.vows):
+                if stem.endswith("У"):
+                    stem = stem[:-1] + (
+                        "ЕВА" if stem.endswith(letters.cons_hush) else "ОВА"
                     )
             else:
                 # Сочетания с йотом
-                if s_new.endswith(letters.cons_hush) or s_new.endswith(
+                if stem.endswith(letters.cons_hush) or stem.endswith(
                     letters.cons_sonor
                 ):
-                    s_new = self.modify_jotted_stem(s_new)
+                    stem = self.modify_jotted_stem(stem)
 
                 # Чередование носовых
-                if s_new.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
-                    s_new = s_new[:-2] + "Я"
+                if stem.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
+                    stem = stem[:-2] + "Я"
 
-                elif s_new.endswith(letters.cons):
-                    s_new += "+" if s_new == "ХОТ" else "А"
+                elif stem.endswith(letters.cons):
+                    stem += "+" if stem == "ХОТ" else "А"
 
         # 4 класс (словарь)
         elif self.cls == "4":
-            if s_new.endswith(letters.cons_hush) or s_new.endswith(letters.cons_sonor):
-                s_new = self.modify_jotted_stem(s_new)
+            if stem.endswith(letters.cons_hush) or stem.endswith(letters.cons_sonor):
+                stem = self.modify_jotted_stem(stem)
 
-            if any(re.search(regex + "$", s_new) for regex in utils.verbs.cls_x_e):
-                s_new += "+"
-            elif any(re.search(regex + "$", s_new) for regex in utils.verbs.cls_x_a):
-                s_new += "А" if s_new.endswith(letters.cons_hush) else "Я"
+            if any(re.search(regex + "$", stem) for regex in utils.verbs.cls_x_e):
+                stem += "+"
+            elif any(re.search(regex + "$", stem) for regex in utils.verbs.cls_x_a):
+                stem += "А" if stem.endswith(letters.cons_hush) else "Я"
             else:
-                s_new += "И"
+                stem += "И"
 
-        return s_old, s_new + "ТИ"
+        return stem + "ТИ"
 
     @skip_none
-    def _imperative(self, s_old):
+    def _imperative(self, stem) -> str:
         # Удаление тематических гласных
         if (self.pers, self.num) != ("2", "ед"):
-            s_old = s_old[:-1]
+            stem = stem[:-1]
 
         # Вторая палатализация
         lemma = self.modify_cons_stem(
-            s_old[:-1] + letters.palat_2.get(s_old[-1], s_old[-1])
+            stem[:-1] + letters.palat_2.get(stem[-1], stem[-1])
         )
 
         if lemma is not None:
-            return s_old, lemma
+            return lemma
 
-        return self._present(s_old)
+        return self._present(stem)
 
     @skip_none
-    def _imperfect(self, s_old):
+    def _imperfect(self, stem) -> str:
         # Удаление нестяжённых вокалических сочетаний
-        stretch = re.search(r"([+Е][АЯ]|АА|ЯЯ)$", s_old)
+        stretch = re.search(r"([+Е][АЯ]|АА|ЯЯ)$", stem)
         if stretch:
-            s_old = s_old[:-2] + s_old[-1]
+            stem = stem[:-2] + stem[-1]
 
-        s_new = s_old[:-1]
+        stem = stem[:-1]
 
         # Основы-исключения
         for regex in utils.spec.imperfect:
-            mo = re.match(regex, s_new)
+            mo = re.match(regex, stem)
             if mo:
-                s_modif = re.sub(
-                    regex, mo.group(1) + utils.spec.imperfect[regex], s_new
-                )
-                if s_new != s_modif:
-                    return s_old, s_modif + "ТИ"
+                s_modif = re.sub(regex, mo.group(1) + utils.spec.imperfect[regex], stem)
+                if stem != s_modif:
+                    return s_modif + "ТИ"
 
         # Основы на согласный
         lemma = self.modify_cons_stem(
-            s_new[:-1] + letters.palat_1.get(s_new[-1], s_new[-1])
+            stem[:-1] + letters.palat_1.get(stem[-1], stem[-1])
         )
         if lemma is not None:
-            return s_old, lemma
+            return lemma
 
         # Сочетания с йотом
-        s_modif = self.modify_jotted_stem(s_new)
-        if s_new != s_modif:
-            return s_new, s_modif + "ИТИ"
+        s_modif = self.modify_jotted_stem(stem)
+        if stem != s_modif:
+            return s_modif + "ИТИ"
 
         # Второе спряжение
-        if s_new in utils.verbs.cls_x_a:
-            return s_new, s_new + "АТИ"
-        if s_new in utils.verbs.cls_x_e:
-            return s_new, s_new + "+ТИ"
+        if stem in utils.verbs.cls_x_a:
+            return stem + "АТИ"
+        if stem in utils.verbs.cls_x_e:
+            return stem + "+ТИ"
 
         # Иначе возвращаем форму на гласную
-        return s_old, s_old + "ТИ"
+        return stem + "ТИ"
 
-    def get_lemma(self):
-        stem, lemma = self.reg, None
+    def get_lemma(self) -> str:
+        lemma = "None"
 
         if hasattr(self, "role") and self.role == "св":
             if self.mood == "сосл":
-                return self.reg, "AUX-SBJ"
+                return "AUX-SBJ"
             if self.tense == "перф":
-                return self.reg, "AUX-PRF"
+                return "AUX-PRF"
             if self.tense == "плюскв":
-                return self.reg, "AUX-PQP"
+                return "AUX-PQP"
 
             mo = re.match(r"буд ?([12])", self.tense)
             if mo:
-                return self.reg, "AUX-FT" + mo.group(1)
-            return self.reg, None
+                return "AUX-FT" + mo.group(1)
+            return "None"
 
         if self.mood == "изъяв":
             # Простые времена
 
             if self.tense == "н/б":
-                stem, lemma = self._present(
+                lemma = self._present(
                     self.get_stem(self.reg, (self.pers, self.num), utils.infl.present)
                 )
             elif self.tense == "имп":
-                stem, lemma = self._imperfect(
+                lemma = self._imperfect(
                     self.get_stem(self.reg, (self.pers, self.num), utils.infl.imperfect)
                 )
             elif self.tense == "прош":
-                stem, lemma = self._part_el(
+                lemma = self._part_el(
                     self.get_stem(self.reg, (self.gen, self.num), utils.infl.part_el)
                 )
             elif self.tense == "аор пр":
-                stem, lemma = self._aor_simp(
+                lemma = self._aor_simp(
                     self.get_stem(
                         self.reg, (self.pers, self.num), utils.infl.aorist_simple
                     )
                 )
             elif self.tense.startswith("аор"):
-                stem, lemma = self._aor_sigm(
+                lemma = self._aor_sigm(
                     self.get_stem(
                         self.reg, (self.pers, self.num), utils.infl.aorist_sigm
                     )
@@ -331,11 +321,11 @@ class Verb(Verbal):
             elif self.tense in ("буд", "а/имп"):
                 # Тут лексема одна-единственная
                 if self.tense == "буд":
-                    s_old = self.get_stem(
+                    stem = self.get_stem(
                         self.reg, (self.pers, self.num), utils.infl.present
                     )
                 else:
-                    s_old = (
+                    stem = (
                         self.reg
                         if self.pers in ("2", "3") and self.num == "ед"
                         else self.get_stem(
@@ -343,34 +333,34 @@ class Verb(Verbal):
                         )
                     )
 
-                if s_old is not None:
-                    stem, lemma = s_old, "БЫТИ"
+                if stem is not None:
+                    lemma = "БЫТИ"
 
             # Сложные времена
             elif re.match("перф|плюскв|буд ?[12]", self.tense):
                 if self.role == "инф":
-                    return self.reg, self.reg
+                    return self.reg
                 if self.role.startswith("пр"):
-                    stem, lemma = self._part_el(
+                    lemma = self._part_el(
                         self.get_stem(
                             self.reg, (self.gen, self.num), utils.infl.part_el
                         )
                     )
 
         elif self.mood == "сосл" and self.role.startswith("пр"):
-            stem, lemma = self._part_el(
+            lemma = self._part_el(
                 self.get_stem(self.reg, (self.gen, self.num), utils.infl.part_el)
             )
 
         elif self.mood == "повел":
-            stem, lemma = self._imperative(
+            lemma = self._imperative(
                 self.get_stem(self.reg, (self.pers, self.num), utils.infl.imperative)
             )
 
         if lemma is not None and self.refl:
             lemma += "СЯ"
 
-        return stem, lemma
+        return lemma
 
     @property
     def value(self):

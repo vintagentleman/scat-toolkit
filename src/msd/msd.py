@@ -28,7 +28,7 @@ class MSD:
 
         return s_modif
 
-    def get_lemma(self) -> (str, str):
+    def get_lemma(self) -> str:
         lemma = self.reg.replace("(", "").replace(")", "")
 
         if lemma.endswith(letters.cons):
@@ -45,7 +45,7 @@ class MSD:
         elif self.pos == "суп":
             lemma = lemma[:-1] + "И"
 
-        return self.reg, lemma
+        return lemma
 
     @property
     def value(self):

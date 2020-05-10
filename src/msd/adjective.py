@@ -20,40 +20,37 @@ class Adjective(Noun):
             return "ИИ" if stem.endswith(letters.cons_palat) else "ЫИ"
         return "И" if stem.endswith(letters.vows) else "ИИ"
 
-    def get_lemma(self):
+    def get_lemma(self) -> str:
         # Стемминг
-        s_old = self.get_stem(
+        stem = self.get_stem(
             self.reg,
             (self.d_new, self.case, self.num, self.gen),
             utils.infl.noun if self.d_old not in ("м", "тв") else utils.infl.pronoun,
         )
 
-        if s_old is None:
-            return self.reg, None
-
-        s_new = s_old
+        if stem is None:
+            return "None"
 
         # Суффиксы сравнительной степени
         if self.pos == "прил/ср":
-            s_new = self._de_comp_suffix(s_new)
+            stem = self._de_comp_suffix(stem)
 
         # Плюс-минус
-        s_new = self.check_reduction_markup(s_new)
+        stem = self.check_reduction_markup(stem)
 
         # Вторая палатализация
-        if "*" in self.nb and s_new[-1] in "ЦЗСТ":
-            s_new = s_new[:-1] + letters.palat_2[s_new[-1]]
+        if "*" in self.nb and stem[-1] in "ЦЗСТ":
+            stem = stem[:-1] + letters.palat_2[stem[-1]]
 
         # Удаление прояснённых редуцированных
         if "-о" in self.nb or "-е" in self.nb:
-            s_new = s_new[:-2] + s_new[-1]
+            stem = stem[:-2] + stem[-1]
 
         # Возвращение маркера одушевлённости
         if self.prop:
-            s_old = "*" + s_old
-            s_new = "*" + s_new
+            stem = "*" + stem
 
         # Нахождение флексии
         if self.prop and self.d_old not in ("м", "тв"):
-            return s_old, s_new + super().get_infl(s_new)
-        return s_old, s_new + self.get_infl(s_new)
+            return stem + super().get_infl(stem)
+        return stem + self.get_infl(stem)

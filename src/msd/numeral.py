@@ -48,7 +48,7 @@ class Numeral(Adjective):
                 return "Е"
             return super().get_infl(stem)
 
-    def get_lemma(self):
+    def get_lemma(self) -> str:
         if self.pos == "мест":
             # Проверка на исключительность
             if (
@@ -56,36 +56,35 @@ class Numeral(Adjective):
                 and self.zhe is not None
                 and "Д" in self.zhe.group()
             ):
-                return self.reg, self._neg("КО") + self._zhe()
+                return self._neg("КО") + self._zhe()
             # Проверка на вопросительность
             if (self.d_old, self.case) in utils.infl.pron_interr and re.match(
                 utils.infl.pron_interr[(self.d_old, self.case)][0], self.reg
             ):
                 if self.zhe is not None and "Д" in self.zhe.group():
-                    return self.reg, self._neg("КО") + self._zhe()
+                    return self._neg("КО") + self._zhe()
                 return (
-                    self.reg,
                     self._neg(utils.infl.pron_interr[(self.d_old, self.case)][1])
-                    + self._zhe(),
+                    + self._zhe()
                 )
         else:
             # Проверка на изменяемость обеих частей
             for key in utils.spec.numeral:
                 if re.match(key, self.reg):
-                    return self.reg, utils.spec.numeral[key]
+                    return utils.spec.numeral[key]
 
         if self.d_old != "р/скл":
             # Сначала ищем в местоименной парадигме
-            s_old = self.get_stem(
+            stem = self.get_stem(
                 self.reg,
                 (self.d_new, self.case, self.num, self.gen),
                 utils.infl.pronoun,
             )
 
             # Если не нашли, то обращаемся к именной (актуально прежде всего для им. и вин. п.)
-            if s_old is None:
+            if stem is None:
                 if self.d_new == "тв":
-                    s_old = self.get_stem(
+                    stem = self.get_stem(
                         self.reg,
                         (
                             "o" if self.gen in ("м", "ср") else "a",
@@ -96,7 +95,7 @@ class Numeral(Adjective):
                         utils.infl.noun,
                     )
                 elif self.d_new == "м":
-                    s_old = self.get_stem(
+                    stem = self.get_stem(
                         self.reg,
                         (
                             "jo" if self.gen in ("м", "ср") else "ja",
@@ -107,7 +106,7 @@ class Numeral(Adjective):
                         utils.infl.noun,
                     )
                 else:
-                    s_old = self.get_stem(
+                    stem = self.get_stem(
                         self.reg,
                         (
                             self.d_new,
@@ -120,7 +119,7 @@ class Numeral(Adjective):
                         utils.infl.noun,
                     )
         else:
-            s_old = self.get_stem(
+            stem = self.get_stem(
                 self.reg,
                 (
                     "тв"
@@ -135,8 +134,8 @@ class Numeral(Adjective):
                 utils.infl.pronoun,
             )
 
-            if s_old is None:
-                s_old = self.get_stem(
+            if stem is None:
+                stem = self.get_stem(
                     self.reg,
                     (
                         "jo" if self.gen in ("м", "ср") else "ja",
@@ -148,27 +147,27 @@ class Numeral(Adjective):
                 )
 
         # Обработка основы
-        if s_old is None:
-            return self.reg, None
+        if stem is None:
+            return "None"
 
         # Модификация основы
-        s_new = self._pron_modif(s_old)
+        stem = self._pron_modif(stem)
 
         # Плюс-минус
-        s_new = self.check_reduction_markup(s_new)
+        stem = self.check_reduction_markup(stem)
 
         # Вторая палатализация
-        if "*" in self.nb and s_new[-1] in "ЦЗСТ":
-            s_new = s_new[:-1] + letters.palat_2[s_new[-1]]
+        if "*" in self.nb and stem[-1] in "ЦЗСТ":
+            stem = stem[:-1] + letters.palat_2[stem[-1]]
 
         # Нахождение флексии
         if self.pos == "мест":
             infl = (
-                utils.spec.pronoun[s_new]
-                if s_new in utils.spec.pronoun
-                else super().get_infl(s_new)
+                utils.spec.pronoun[stem]
+                if stem in utils.spec.pronoun
+                else super().get_infl(stem)
             )
         else:
-            infl = self.get_infl(s_new)
+            infl = self.get_infl(stem)
 
-        return s_old, self._neg(s_new) + self._zhe(infl)
+        return self._neg(stem) + self._zhe(infl)

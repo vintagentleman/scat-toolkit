@@ -17,7 +17,7 @@ class Pronoun(MSD):
         self.num = w.ana[3].split("/")[-1] if self.pers != "возвр" else "ед"
 
     def get_lemma(self):
-        lemma = None
+        lemma = "None"
 
         if self.pers == "возвр" and self.case in utils.infl.pron_refl:
             if re.match(utils.infl.pron_refl[self.case][0], self.reg):
@@ -34,7 +34,7 @@ class Pronoun(MSD):
             elif self.reg == "Т`":
                 lemma = "ТЫ"
 
-        return self.reg, lemma
+        return lemma
 
     @property
     def value(self):

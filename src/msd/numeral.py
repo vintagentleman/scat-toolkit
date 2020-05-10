@@ -99,7 +99,7 @@ class Numeral(Adjective):
                     s_old = self.get_stem(
                         self.reg,
                         (
-                            "jo" if self.gen in ("м", "ср") else "a",
+                            "jo" if self.gen in ("м", "ср") else "ja",
                             self.case,
                             self.num,
                             self.gen,

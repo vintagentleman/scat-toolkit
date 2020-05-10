@@ -208,70 +208,69 @@ class Noun(MSD):
                 return "ИЕ"
             return "И"
 
-    def get_lemma(self):
+    def get_lemma(self) -> str:
         # Проверка на исключительность
         for key in utils.spec.noun:
             if re.match(key, self.reg):
-                return self.reg, utils.spec.noun[key][0] + utils.spec.noun[key][1]
+                return utils.spec.noun[key]
 
         # Стемминг (с учётом особого смешения)
         if self.d_new in ("a", "ja", "i") and self.gen == "ср":
-            s_old = self.get_stem(
+            stem = self.get_stem(
                 self.reg, (self.d_new, self.case, self.num, "м"), utils.infl.noun
             )
         else:
-            s_old = self.get_stem(
+            stem = self.get_stem(
                 self.reg, (self.d_new, self.case, self.num, self.gen), utils.infl.noun
             )
 
-        if s_old is None:
-            return self.reg, None
+        if stem is None:
+            return "None"
 
         # Проверка на склоняемость второй части
-        s_new, grd = self._check_grd(s_old)
+        stem, grd = self._check_grd(stem)
         if grd is not None:
-            s_new = self.get_stem(
-                s_new, (self.d_new, self.case, self.num, self.gen), utils.infl.noun
+            stem = self.get_stem(
+                stem, (self.d_new, self.case, self.num, self.gen), utils.infl.noun
             )
 
         # Обработка основы
-        if s_new is None:
-            return self.reg, None
+        if stem is None:
+            return "None"
 
         # Модификации по типам склонения и другие
-        s_new = self._decl_spec_modif(s_new)
+        stem = self._decl_spec_modif(stem)
 
         # Первая палатализация
-        if s_new[-1] in "ЧЖШ" and (
-            (self.case, self.num, self.gen) == ("зв", "ед", "м")
-            or s_new in ("ОЧ", "УШ")
+        if stem[-1] in "ЧЖШ" and (
+            (self.case, self.num, self.gen) == ("зв", "ед", "м") or stem in ("ОЧ", "УШ")
         ):
             if (self.d_old, self.d_new) == ("jo", "o"):
-                s_new = s_new[:-1] + letters.palat_1_jo[s_new[-1]]
+                stem = stem[:-1] + letters.palat_1_jo[stem[-1]]
             else:
-                s_new = s_new[:-1] + letters.palat_1[s_new[-1]]
+                stem = stem[:-1] + letters.palat_1[stem[-1]]
 
         # Вторая палатализация
-        elif "*" in self.nb and s_new[-1] in "ЦЗСТ":
-            s_new = s_new[:-1] + letters.palat_2[s_new[-1]]
+        elif "*" in self.nb and stem[-1] in "ЦЗСТ":
+            stem = stem[:-1] + letters.palat_2[stem[-1]]
 
         # Прояснение/исчезновение редуцированных
         if any(tag in self.nb for tag in ("+о", "+е", "-о", "-е")):
-            s_new = self._de_reduce_manual(s_new)
-        elif s_new[-1] == "Ц" and self._is_reduced():
-            s_new = self._de_reduce_auto(s_new)
+            stem = self._de_reduce_manual(stem)
+        elif stem[-1] == "Ц" and self._is_reduced():
+            stem = self._de_reduce_auto(stem)
 
         # 'НОВЪ' --> 'НОВГОРОДЪ'; 'ЦАРЬ' --> 'ЦАРГРАДЪ' (?)
         if grd is not None:
-            s_new += grd
+            stem += grd
 
         # Возвращение маркера одушевлённости
         if self.prop:
-            s_old = "*" + s_old
-            s_new = "*" + s_new
+            stem = "*" + stem
+            stem = "*" + stem
 
         # Нахождение флексии
-        return s_old, s_new + self.get_infl(s_new)
+        return stem + self.get_infl(stem)
 
     @property
     def value(self):

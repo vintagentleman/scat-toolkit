@@ -31,114 +31,114 @@ class Participle(Verbal):
         self.num = w.ana[3].split("/")[-1]
         self.gen = w.ana[4].split("/")[-1] if w.ana[4] != "0" else "м"
 
-    def _act_past(self):
+    def _act_pres(self):
+        return "None"
+
+    def _pas_pres(self):
+        return "None"
+
+    def _act_past(self) -> str:
         # Стемминг
         if self.d_old != "м":
-            s_old = self.get_stem(
+            stem = self.get_stem(
                 self.reg, (self.d_new, self.case, self.num, self.gen), utils.infl.noun
             )
         else:
-            s_old = self.get_stem(
+            stem = self.get_stem(
                 self.reg,
                 (self.d_new, self.case, self.num, self.gen),
                 utils.infl.pronoun,
             )
 
-        if s_old is None:
-            return self.reg, None
-
-        s_new = s_old
+        if stem is None:
+            return "None"
 
         # Удаление словоизменительных суффиксов
-        suff = re.search("В$|В?[ЪЬ]?Ш$", s_new)
+        suff = re.search("В$|В?[ЪЬ]?Ш$", stem)
         if suff:
-            s_new = s_new[: -len(suff.group())]
+            stem = stem[: -len(suff.group())]
 
         # Основы-исключения
-        s_modif = self.get_spec_stem(s_new, utils.spec.part)
-        if s_new != s_modif:
-            return s_old, s_modif + "ТИ"
+        s_modif = self.get_spec_stem(stem, utils.spec.part)
+        if stem != s_modif:
+            return s_modif + "ТИ"
 
         # Проблемные классы
-        lemma = self.modify_cons_stem(s_new)
+        lemma = self.modify_cons_stem(stem)
         if lemma is not None:
-            return s_old, lemma
+            return lemma
 
         # Сочетания с йотом
-        if s_new.endswith(("Л", "Н", "Р", "Ж", "ЖД", "Ч", "Ш", "ШТ", "Щ")):
-            s_new = self.modify_jotted_stem(s_new) + "И"
+        if stem.endswith(("Л", "Н", "Р", "Ж", "ЖД", "Ч", "Ш", "ШТ", "Щ")):
+            stem = self.modify_jotted_stem(stem) + "И"
         # 4 класс
-        elif s_new[-1] in letters.cons or s_new in ("ВЯ", "СТЫ"):
-            s_new += "НУ"
+        elif stem[-1] in letters.cons or stem in ("ВЯ", "СТЫ"):
+            stem += "НУ"
 
-        return s_old, s_new + "ТИ"
+        return stem + "ТИ"
 
-    def _pas_past(self):
+    def _pas_past(self) -> str:
         # Стемминг
         if self.d_old != "тв":
-            s_old = self.get_stem(
+            stem = self.get_stem(
                 self.reg, (self.d_new, self.case, self.num, self.gen), utils.infl.noun
             )
         else:
-            s_old = self.get_stem(
+            stem = self.get_stem(
                 self.reg,
                 (self.d_new, self.case, self.num, self.gen),
                 utils.infl.pronoun,
             )
 
-        if s_old is None:
-            return self.reg, None
-
-        s_new = s_old
+        if stem is None:
+            return "None"
 
         # Удаление словоизменительных суффиксов
-        suff = re.search("Е?Н?Н$|Т$", s_new)
+        suff = re.search("Е?Н?Н$|Т$", stem)
         if suff:
-            s_new = s_new[: -len(suff.group())]
+            stem = stem[: -len(suff.group())]
 
         # Проблемные классы
         lemma = self.modify_cons_stem(
-            s_new[:-1] + letters.palat_1.get(s_new[-1], s_new[-1])
+            stem[:-1] + letters.palat_1.get(stem[-1], stem[-1])
         )
         if lemma is not None:
-            return s_old, lemma
+            return lemma
 
         # Сочетания с йотом
-        if s_new.endswith(("Л", "Н", "Р", "Ж", "ЖД", "Ч", "Ш", "ШТ", "Щ")):
-            s_new = self.modify_jotted_stem(s_new) + "И"
+        if stem.endswith(("Л", "Н", "Р", "Ж", "ЖД", "Ч", "Ш", "ШТ", "Щ")):
+            stem = self.modify_jotted_stem(stem) + "И"
 
         # Чередование /u:/: 'вдохновенный', 'проникновенный'; 'омовенный', 'незабвенный'. Но - 'благословенный'
         elif suff and suff.group().startswith("ЕН"):
-            mo = re.search("[ОЪ]?В$", s_new)
+            mo = re.search("[ОЪ]?В$", stem)
 
-            if not s_new.endswith("СЛОВ") and mo:
-                s_new = s_new[: -len(mo.group())]
+            if not stem.endswith("СЛОВ") and mo:
+                stem = stem[: -len(mo.group())]
 
-                if s_new[-1] == "Н":
-                    s_new += "У"
+                if stem[-1] == "Н":
+                    stem += "У"
                 else:
-                    s_new += "Ы"
+                    stem += "Ы"
             else:
-                s_new += "И"
+                stem += "И"
 
         # 4 класс
-        elif s_new[-1] in letters.cons or s_new in ("ВЯ", "СТЫ"):
-            s_new += "НУ"
+        elif stem[-1] in letters.cons or stem in ("ВЯ", "СТЫ"):
+            stem += "НУ"
 
-        return s_old, s_new + "ТИ"
+        return stem + "ТИ"
 
-    def get_lemma(self):
-        stem, lemma = self.reg, None
-
+    def get_lemma(self) -> str:
         if self.d_old in ("a", "o", "тв"):
-            stem, lemma = self._pas_pres() if self.tense == "наст" else self._pas_past()
+            lemma = self._pas_pres() if self.tense == "наст" else self._pas_past()
         else:
-            stem, lemma = self._act_pres() if self.tense == "наст" else self._act_past()
+            lemma = self._act_pres() if self.tense == "наст" else self._act_past()
 
-        if lemma is not None and self.refl:
+        if lemma != "None" and self.refl:
             lemma += "СЯ"
 
-        return stem, lemma
+        return lemma
 
     @property
     def value(self):

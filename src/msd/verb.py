@@ -4,10 +4,10 @@ import utils.infl
 import utils.spec
 import utils.verbs
 from utils import letters, replace_chars, skip_none
-from .msd import Verbal
+from .msd import MSD
 
 
-class Verb(Verbal):
+class Verb(MSD):
     def __init__(self, w):
         super().__init__(w)
         self.refl = self.pos.endswith("/в")

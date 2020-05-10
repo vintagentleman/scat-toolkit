@@ -3,10 +3,10 @@ import re
 import utils.infl
 import utils.spec
 from utils import letters, replace_chars
-from .msd import Verbal
+from .verb import Verb
 
 
-class Participle(Verbal):
+class Participle(Verb):
     def __init__(self, w):
         super().__init__(w)
         w.ana[0] = replace_chars(w.ana[0], "аеоу", "aeoy")  # Cyr to Latin

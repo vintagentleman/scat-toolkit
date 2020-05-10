@@ -91,7 +91,7 @@ class Verbal(MSD):
         if re.search(r"({})$".format("|".join(utils.verbs.cls_vii_1)), s):
             return s + "СТИ"
 
-        # Группа VI/2/а и подкласс VII/1
+        # Группа VI/2/а
         for regex in utils.verbs.cls_vi_2_a:
             mo = re.match(r"(.*){}$".format(regex), s)
             if mo:
@@ -112,7 +112,7 @@ class Verbal(MSD):
                 # Чередование с нулём
                 if s == "ТОЛ":
                     s += "О"
-                elif s == "Ж":
+                elif s in ("Ж", "Р"):
                     s += "Е"
 
                 return s + "ЩИ"

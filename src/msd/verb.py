@@ -39,8 +39,6 @@ class Verb(Verbal):
         else:
             self.pers, self.num, self.cls = w.ana[1], w.ana[2], w.ana[3].split("/")[-1]
 
-        self.nb = w.ana[4] if self.mood == "повел" else ""
-
     @skip_none
     def _part_el(self, s_old):
         if s_old is None:
@@ -138,18 +136,11 @@ class Verb(Verbal):
                     return s_old, prefix + utils.verbs.isol[stem] + "ТИ"
 
         # Удаление тематических гласных
-        if (
-            self.mood == "изъяв"
-            and (self.pers, self.num) not in (("1", "ед"), ("3", "мн"))
-        ) or (self.mood == "повел" and (self.pers, self.num) != ("2", "ед")):
+        if self.mood == "изъяв" and (self.pers, self.num) not in (
+            ("1", "ед"),
+            ("3", "мн"),
+        ):
             s_new = s_new[:-1]
-
-        # Вторая палатализация
-        if self.mood == "повел" and "*" in self.nb:
-            s_new = s_new[:-1] + letters.palat_2.get(s_new[-1], s_new[-1])
-
-            if s_new == "РК":
-                s_new = "РЕК"
 
         # 1 класс (алгоритм + словари)
         if self.cls == "1":
@@ -236,6 +227,22 @@ class Verb(Verbal):
                 s_new += "И"
 
         return s_old, s_new + "ТИ"
+
+    @skip_none
+    def _imperative(self, s_old):
+        # Удаление тематических гласных
+        if (self.pers, self.num) != ("2", "ед"):
+            s_old = s_old[:-1]
+
+        # Вторая палатализация
+        lemma = self.modify_cons_stem(
+            s_old[:-1] + letters.palat_2.get(s_old[-1], s_old[-1])
+        )
+
+        if lemma is not None:
+            return s_old, lemma
+
+        return self._present(s_old)
 
     @skip_none
     def _imperfect(self, s_old):
@@ -345,7 +352,9 @@ class Verb(Verbal):
                     return self.reg, self.reg
                 if self.role.startswith("пр"):
                     stem, lemma = self._part_el(
-                        self.get_stem(self.reg, (self.gen, self.num), utils.infl.part_el)
+                        self.get_stem(
+                            self.reg, (self.gen, self.num), utils.infl.part_el
+                        )
                     )
 
         elif self.mood == "сосл" and self.role.startswith("пр"):
@@ -354,7 +363,7 @@ class Verb(Verbal):
             )
 
         elif self.mood == "повел":
-            stem, lemma = self._present(
+            stem, lemma = self._imperative(
                 self.get_stem(self.reg, (self.pers, self.num), utils.infl.imperative)
             )
 

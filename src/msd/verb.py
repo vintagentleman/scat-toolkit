@@ -3,7 +3,7 @@ import re
 import utils.infl
 import utils.spec
 import utils.verbs
-from utils import letters, replace_chars
+from utils import letters, replace_chars, skip_none
 from .msd import Verbal
 
 
@@ -41,10 +41,8 @@ class Verb(Verbal):
 
         self.nb = w.ana[4] if self.mood == "повел" else ""
 
-    def _part_el(self):
-        # Стемминг
-        s_old = self.get_stem(self.reg, (self.gen, self.num), utils.infl.part_el)
-
+    @skip_none
+    def _part_el(self, s_old):
         if s_old is None:
             return self.reg, None
 
@@ -66,13 +64,8 @@ class Verb(Verbal):
 
         return s_old, s_new + "ТИ"
 
-    def _aor_simp(self):
-        # Стемминг
-        s_old = self.get_stem(self.reg, (self.pers, self.num), utils.infl.aorist_simple)
-
-        if s_old is None:
-            return self.reg, None
-
+    @skip_none
+    def _aor_simp(self, s_old):
         s_new = s_old
 
         # Основы настоящего времени
@@ -94,7 +87,7 @@ class Verb(Verbal):
 
         return s_old, s_new + "ТИ"
 
-    def _aor_sigm(self):
+    def _aor_sigm(self, s_old):
         # Простейший случай
         if self.tense == "аор гл" and self.pers in ("2", "3") and self.num == "ед":
             mo = re.search("С?Т[ЪЬ`]$", self.reg)
@@ -102,11 +95,8 @@ class Verb(Verbal):
                 return self.reg, self.reg[: -len(mo.group())] + "ТИ"
             return self.reg, self.reg + "ТИ"
 
-        # Стемминг
-        s_old = self.get_stem(self.reg, (self.pers, self.num), utils.infl.aorist_sigm)
-
         if s_old is None:
-            return self.reg, None
+            return s_old, None
 
         # Осложнение тематического суффикса
         if self.tense == "аор нов" and s_old.endswith("О"):
@@ -135,17 +125,8 @@ class Verb(Verbal):
 
         return s_old, s_new + "ТИ"
 
-    def _present(self):
-        # Стемминг
-        s_old = self.get_stem(
-            self.reg,
-            (self.pers, self.num),
-            utils.infl.present if self.mood == "изъяв" else utils.infl.imperative,
-        )
-
-        if s_old is None:
-            return self.reg, None
-
+    @skip_none
+    def _present(self, s_old):
         s_new = s_old
 
         # 5 класс (словарь)
@@ -256,13 +237,8 @@ class Verb(Verbal):
 
         return s_old, s_new + "ТИ"
 
-    def _imperfect(self):
-        # Стемминг
-        s_old = self.get_stem(self.reg, (self.pers, self.num), utils.infl.imperfect)
-
-        if s_old is None:
-            return self.reg, None
-
+    @skip_none
+    def _imperfect(self, s_old):
         # Удаление нестяжённых вокалических сочетаний
         stretch = re.search(r"([+Е][АЯ]|АА|ЯЯ)$", s_old)
         if stretch:
@@ -314,28 +290,50 @@ class Verb(Verbal):
 
             mo = re.match(r"буд ?([12])", self.tense)
             if mo:
-                return self.reg, "AUX-FT" + mo.group()
+                return self.reg, "AUX-FT" + mo.group(1)
             return self.reg, None
 
         if self.mood == "изъяв":
             # Простые времена
+
             if self.tense == "н/б":
-                stem, lemma = self._present()
+                stem, lemma = self._present(
+                    self.get_stem(self.reg, (self.pers, self.num), utils.infl.present)
+                )
             elif self.tense == "имп":
-                stem, lemma = self._imperfect()
+                stem, lemma = self._imperfect(
+                    self.get_stem(self.reg, (self.pers, self.num), utils.infl.imperfect)
+                )
             elif self.tense == "прош":
-                stem, lemma = self._part_el()
+                stem, lemma = self._part_el(
+                    self.get_stem(self.reg, (self.gen, self.num), utils.infl.part_el)
+                )
             elif self.tense == "аор пр":
-                stem, lemma = self._aor_simp()
+                stem, lemma = self._aor_simp(
+                    self.get_stem(
+                        self.reg, (self.pers, self.num), utils.infl.aorist_simple
+                    )
+                )
             elif self.tense.startswith("аор"):
-                stem, lemma = self._aor_sigm()
-            elif self.tense == "а/имп":
-                # Тут лексема одна-единственная
-                if self.pers in ("2", "3") and self.num == "ед":
-                    s_old = self.reg
-                else:
-                    s_old = self.get_stem(
+                stem, lemma = self._aor_sigm(
+                    self.get_stem(
                         self.reg, (self.pers, self.num), utils.infl.aorist_sigm
+                    )
+                )
+
+            elif self.tense in ("буд", "а/имп"):
+                # Тут лексема одна-единственная
+                if self.tense == "буд":
+                    s_old = self.get_stem(
+                        self.reg, (self.pers, self.num), utils.infl.present
+                    )
+                else:
+                    s_old = (
+                        self.reg
+                        if self.pers in ("2", "3") and self.num == "ед"
+                        else self.get_stem(
+                            self.reg, (self.pers, self.num), utils.infl.aorist_sigm
+                        )
                     )
 
                 if s_old is not None:
@@ -346,13 +344,19 @@ class Verb(Verbal):
                 if self.role == "инф":
                     return self.reg, self.reg
                 if self.role.startswith("пр"):
-                    stem, lemma = self._part_el()
+                    stem, lemma = self._part_el(
+                        self.get_stem(self.reg, (self.gen, self.num), utils.infl.part_el)
+                    )
 
         elif self.mood == "сосл" and self.role.startswith("пр"):
-            stem, lemma = self._part_el()
+            stem, lemma = self._part_el(
+                self.get_stem(self.reg, (self.gen, self.num), utils.infl.part_el)
+            )
 
         elif self.mood == "повел":
-            stem, lemma = self._present()
+            stem, lemma = self._present(
+                self.get_stem(self.reg, (self.pers, self.num), utils.infl.imperative)
+            )
 
         if lemma is not None and self.refl:
             lemma += "СЯ"

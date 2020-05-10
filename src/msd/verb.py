@@ -360,7 +360,7 @@ class Verb(Verbal):
                 self.get_stem(self.reg, (self.pers, self.num), utils.infl.imperative)
             )
 
-        if lemma is not None and self.refl:
+        if lemma != "None" and self.refl:
             lemma += "СЯ"
 
         return lemma

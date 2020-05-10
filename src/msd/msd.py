@@ -47,14 +47,9 @@ class MSD:
 
         return lemma
 
-    @property
-    def value(self):
-        return []
+    def modify_jotted_stem(self, s):
+        assert self.pos.startswith(("гл", "прич"))
 
-
-class Verbal(MSD):
-    @staticmethod
-    def modify_jotted_stem(s):
         if s.endswith(("БЛ", "ВЛ", "МЛ", "ПЛ", "ФЛ")):
             return s[:-1]
 
@@ -85,8 +80,9 @@ class Verbal(MSD):
 
         return s
 
-    @staticmethod
-    def modify_cons_stem(s):
+    def modify_cons_stem(self, s):
+        assert self.pos.startswith(("гл", "прич"))
+
         # Подкласс VII/1
         if re.search(r"({})$".format("|".join(utils.verbs.cls_vii_1)), s):
             return s + "СТИ"
@@ -123,3 +119,7 @@ class Verbal(MSD):
         # Группа VI/2/в
         if re.search("ШИБ$", s):
             return s + "ИТИ"
+
+    @property
+    def value(self):
+        return []

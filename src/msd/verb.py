@@ -55,13 +55,13 @@ class Verb(Verbal):
         if s_new != s_modif:
             return s_old, s_modif + "ТИ"
 
-        # Проблемные классы
-        lemma = self.cls_cons_modif(s_new)
+        # Основы на согласный
+        lemma = self.modify_cons_stem(s_new)
         if lemma is not None:
             return s_old, lemma
 
         # 4 класс
-        if s_new[-1] in letters.cons or s_new in ("ВЯ", "СТЫ"):
+        if s_new[-1] in letters.cons or s_new in utils.verbs.cls_iv_vow:
             s_new += "НУ"
 
         return s_old, s_new + "ТИ"
@@ -75,21 +75,21 @@ class Verb(Verbal):
 
         s_new = s_old
 
-        # Основы-исключения (настоящего времени)
-        if s_new.endswith(("ДАД", "ЖИВ", "ИД", "ЫД")):
+        # Основы настоящего времени
+        if s_new.endswith(utils.verbs.cls_vii_2):
             s_new = s_new[:-1]
 
         # Первая палатализация
         if s_new[-1] in "ЧЖШ":
             s_new = s_new[:-1] + letters.palat_1[s_new[-1]]
 
-        # Проблемные классы
-        lemma = self.cls_cons_modif(s_new)
+        # Основы на согласный
+        lemma = self.modify_cons_stem(s_new)
         if lemma is not None:
             return s_old, lemma
 
         # 4 класс
-        if s_new[-1] in letters.cons or s_new in ("ВЯ", "СТЫ"):
+        if s_new[-1] in letters.cons or s_new in utils.verbs.cls_iv_vow:
             s_new += "НУ"
 
         return s_old, s_new + "ТИ"
@@ -116,26 +116,27 @@ class Verb(Verbal):
 
         s_new = s_old
 
-        # Основы-исключения (настоящего времени)
-        if s_new.endswith(("ДАД", "ЖИВ", "ИД", "ЫД")):
+        # Основы настоящего времени
+        if s_new.endswith(utils.verbs.cls_vii_2):
             s_new = s_new[:-1]
 
         # Удлинение корневого гласного
         if self.tense == "аор сигм" and s_new == "Р+":
             return s_old, "РЕЩИ"
 
-        # Проблемные классы
-        lemma = self.cls_cons_modif(s_new)
+        # Основы на согласный
+        lemma = self.modify_cons_stem(s_new)
         if lemma is not None:
             return s_old, lemma
 
         # 4 класс
-        if s_new[-1] in letters.cons or s_new in ("ВЯ", "СТЫ"):
+        if s_new[-1] in letters.cons or s_new in utils.verbs.cls_iv_vow:
             s_new += "НУ"
 
         return s_old, s_new + "ТИ"
 
     def _present(self):
+        # Стемминг
         s_old = self.get_stem(
             self.reg,
             (self.pers, self.num),
@@ -149,11 +150,11 @@ class Verb(Verbal):
 
         # 5 класс (словарь)
         if self.cls == "5" or s_new.endswith("БУД"):
-            for stem in utils.verbs.cls_5:
+            for stem in utils.verbs.isol:
                 if s_new.endswith(stem):
                     # Учёт приставочных дериватов
                     prefix = s_new[: -len(stem)] if len(s_new) != len(stem) else ""
-                    return s_old, prefix + utils.verbs.cls_5[stem] + "ТИ"
+                    return s_old, prefix + utils.verbs.isol[stem] + "ТИ"
 
         # Удаление тематических гласных
         if (
@@ -172,7 +173,7 @@ class Verb(Verbal):
         # 1 класс (алгоритм + словари)
         if self.cls == "1":
             # Основы на согласный
-            lemma = self.cls_cons_modif(
+            lemma = self.modify_cons_stem(
                 s_new[:-1] + letters.palat_1.get(s_new[-1], s_new[-1])
             )
             if lemma is not None:
@@ -199,7 +200,7 @@ class Verb(Verbal):
                 )
 
             # Основы со вставкой
-            elif s_new.endswith(("ДАД", "ЖИВ", "ИД", "ЫД")):
+            elif s_new.endswith(utils.verbs.cls_vii_2):
                 s_new = s_new[:-1]
 
             # Приставочные дериваты БЫТИ
@@ -209,13 +210,13 @@ class Verb(Verbal):
             elif s_new.endswith(letters.cons):
                 s_new = (
                     s_new[:-2] + s_new[-1] + "А"
-                    if s_new.endswith(("БЕР", "ДЕР", "ЗОВ"))
+                    if s_new.endswith(utils.verbs.cls_v_1_d)
                     else s_new + "А"
                 )
 
         # 2 класс (алгоритм)
         elif self.cls == "2":
-            if s_new.endswith(("Д+Н", "СТАН")):
+            if s_new.endswith(utils.verbs.cls_vii_3):
                 s_new = s_new[:-1]
             else:
                 s_new += "У"
@@ -232,7 +233,7 @@ class Verb(Verbal):
                 if s_new.endswith(letters.cons_hush) or s_new.endswith(
                     letters.cons_sonor
                 ):
-                    s_new = self.de_jot(s_new)
+                    s_new = self.modify_jotted_stem(s_new)
 
                 # Чередование носовых
                 if s_new.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
@@ -244,11 +245,11 @@ class Verb(Verbal):
         # 4 класс (словарь)
         elif self.cls == "4":
             if s_new.endswith(letters.cons_hush) or s_new.endswith(letters.cons_sonor):
-                s_new = self.de_jot(s_new)
+                s_new = self.modify_jotted_stem(s_new)
 
-            if any(re.search(regex + "$", s_new) for regex in utils.verbs.cls_4_e):
+            if any(re.search(regex + "$", s_new) for regex in utils.verbs.cls_x_e):
                 s_new += "+"
-            elif any(re.search(regex + "$", s_new) for regex in utils.verbs.cls_4_a):
+            elif any(re.search(regex + "$", s_new) for regex in utils.verbs.cls_x_a):
                 s_new += "А" if s_new.endswith(letters.cons_hush) else "Я"
             else:
                 s_new += "И"
@@ -279,22 +280,22 @@ class Verb(Verbal):
                 if s_new != s_modif:
                     return s_old, s_modif + "ТИ"
 
-        # Проблемные классы
-        lemma = self.cls_cons_modif(
+        # Основы на согласный
+        lemma = self.modify_cons_stem(
             s_new[:-1] + letters.palat_1.get(s_new[-1], s_new[-1])
         )
         if lemma is not None:
             return s_old, lemma
 
         # Сочетания с йотом
-        s_modif = self.de_jot(s_new)
+        s_modif = self.modify_jotted_stem(s_new)
         if s_new != s_modif:
             return s_new, s_modif + "ИТИ"
 
         # Второе спряжение
-        if s_new in utils.verbs.cls_4_a:
+        if s_new in utils.verbs.cls_x_a:
             return s_new, s_new + "АТИ"
-        if s_new in utils.verbs.cls_4_e:
+        if s_new in utils.verbs.cls_x_e:
             return s_new, s_new + "+ТИ"
 
         # Иначе возвращаем форму на гласную

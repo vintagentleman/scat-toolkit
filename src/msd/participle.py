@@ -31,25 +31,9 @@ class Participle(Verb):
         self.case = w.ana[2].split("/")[-1]
         self.num = w.ana[3].split("/")[-1]
         self.gen = w.ana[4].split("/")[-1] if w.ana[4] != "0" else "м"
+        self.voice = "пас" if self.d_old in ("a", "o", "тв") else "акт"
 
-    def _act_pres(self, stem) -> str:
-        # Учёт словоизменительных суффиксов
-        mo = re.search(
-            r"[АЫЯ]$"
-            if (self.d_new, self.case, self.num) == ("jo", "им", "ед")
-            else r".Щ$",
-            stem,
-        )
-        if mo is None:
-            return "None"
-
-        suff = mo.group()
-        stem = stem[: -len(suff)]
-
-        lemma = self.modify_cons_stem(stem)
-        if lemma is not None:
-            return lemma
-
+    def _act_pres(self, stem, suff) -> str:
         if suff == "ЮЩ":
             return self.cls_3(stem)
         if suff in ("А", "Я", "УЩ") and stem.endswith(
@@ -64,23 +48,12 @@ class Participle(Verb):
             return self.cls_3(stem)
         return "None"
 
-    def _pas_pres(self, stem) -> str:
-        # Учёт словоизменительных суффиксов
-        mo = re.search(r".М$", stem)
-        if mo is None:
-            return "None"
-
-        suff = mo.group()
-        stem = stem[: -len(suff)]
-
-        lemma = self.modify_cons_stem(stem)
-        if lemma is not None:
-            return lemma
-
+    def _pas_pres(self, stem, suff) -> str:
         if suff == "ОМ":
             return self.cls_1(stem)
         if suff == "ИМ":
             return self.cls_4(stem)
+        # 2 класс невероятен
         return self.cls_3(stem)
 
     def _act_past(self, stem) -> str:
@@ -164,7 +137,9 @@ class Participle(Verb):
 
             if stem is None and self.d_old in ("ja", "jo"):
                 stem = self.get_stem(
-                    self.reg, (self.d_old[1:], self.case, self.num, self.gen), utils.infl.noun
+                    self.reg,
+                    (self.d_old[1:], self.case, self.num, self.gen),
+                    utils.infl.noun,
                 )
 
         if stem is None:
@@ -172,11 +147,39 @@ class Participle(Verb):
                 return "None"
             stem = self.reg
 
-        if self.d_old in ("a", "o", "тв"):
+        if self.tense == "наст":
+            suff = None
+
+            if self.voice == "акт":
+                mo = re.search(
+                    r"[АЫЯ]$"
+                    if (self.d_new, self.case, self.num) == ("jo", "им", "ед")
+                    else r".Щ$",
+                    stem,
+                )
+            else:
+                mo = re.search(r".М$", stem)
+
+            if mo is not None:
+                suff = mo.group()
+                stem = stem[: -len(suff)]
+
+            # 5 класс
+            lemma = self.cls_5(stem)
+            if lemma is not None:
+                return lemma
+
+            # Основы на согласный
+            lemma = self.modify_cons_stem(stem)
+            if lemma is not None:
+                return lemma
+
             return (
-                self._pas_pres(stem) if self.tense == "наст" else self._pas_past(stem)
+                self._act_pres(stem, suff)
+                if self.voice == "акт"
+                else self._pas_pres(stem, suff)
             )
-        return self._act_pres(stem) if self.tense == "наст" else self._act_past(stem)
+        return self._act_past(stem) if self.voice == "акт" else self._pas_past(stem)
 
     @property
     def value(self):

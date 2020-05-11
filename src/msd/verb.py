@@ -201,11 +201,10 @@ class Verb(MSD):
 
     @staticmethod
     def cls_5(stem) -> str:
-        for s in utils.verbs.isol:
-            if stem.endswith(s):
-                # Учёт приставочных дериватов
-                prefix = stem[: -len(s)] if len(stem) != len(s) else ""
-                return prefix + utils.verbs.isol[s] + "ТИ"
+        for regex in utils.verbs.isol:
+            mo = re.search(r"{}$".format(regex), stem)
+            if mo is not None:
+                return stem[: -len(mo.group())] + utils.verbs.isol[regex] + "ТИ"
 
     @skip_none
     def _present(self, stem) -> str:

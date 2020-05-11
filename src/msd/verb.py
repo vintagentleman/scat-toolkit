@@ -157,7 +157,8 @@ class Verb(MSD):
 
         return stem + "ТИ"
 
-    def cls_2(self, stem) -> str:
+    @staticmethod
+    def cls_2(stem) -> str:
         if stem.endswith(utils.verbs.cls_vii_3):
             stem = stem[:-1]
         else:
@@ -198,15 +199,21 @@ class Verb(MSD):
 
         return stem + "ТИ"
 
+    @staticmethod
+    def cls_5(stem) -> str:
+        for s in utils.verbs.isol:
+            if stem.endswith(s):
+                # Учёт приставочных дериватов
+                prefix = stem[: -len(s)] if len(stem) != len(s) else ""
+                return prefix + utils.verbs.isol[s] + "ТИ"
+
     @skip_none
     def _present(self, stem) -> str:
         # 5 класс
         if self.cls == "5" or stem.endswith("БУД"):
-            for s in utils.verbs.isol:
-                if stem.endswith(s):
-                    # Учёт приставочных дериватов
-                    prefix = stem[: -len(s)] if len(stem) != len(s) else ""
-                    return prefix + utils.verbs.isol[s] + "ТИ"
+            lemma = self.cls_5(stem)
+            if lemma is not None:
+                return lemma
 
         # Удаление тематических гласных
         if self.mood == "изъяв" and (self.pers, self.num) not in (

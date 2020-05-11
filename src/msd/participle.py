@@ -34,18 +34,18 @@ class Participle(Verb):
         self.voice = "пас" if self.d_old in ("a", "o", "тв") else "акт"
 
     def _act_pres(self, stem, suff) -> str:
-        if suff == "ЮЩ":
-            return self.cls_3(stem)
-        if suff in ("А", "Я", "УЩ") and stem.endswith(
-            letters.cons_hush + letters.cons_sonor
+        if suff == "ЮЩ" or (
+            suff == "УЩ" and stem.endswith(letters.cons_hush + letters.cons_sonor)
         ):
             return self.cls_3(stem)
         if suff in ("Ы", "УЩ"):
             return self.cls_2(stem) if stem.endswith("Н") else self.cls_1(stem)
         if suff == "ЯЩ":
             return self.cls_4(stem)
-        if suff in ("А", "Я"):  # Здесь невозможно определить, 3 класс или 4
+        if stem.endswith(letters.vows):
             return self.cls_3(stem)
+        if suff in ("А", "Я"):  # Здесь невозможно определить, 3 класс или 4
+            return self.cls_4(stem)
         return "None"
 
     def _pas_pres(self, stem, suff) -> str:
@@ -53,8 +53,9 @@ class Participle(Verb):
             return self.cls_1(stem)
         if suff == "ИМ":
             return self.cls_4(stem)
-        # 2 класс невероятен
-        return self.cls_3(stem)
+        if suff == "ЕМ":
+            return self.cls_3(stem)
+        return "None"
 
     def _act_past(self, stem) -> str:
         # Удаление словоизменительных суффиксов

@@ -39,6 +39,10 @@ class Verb(MSD):
         else:
             self.pers, self.num, self.cls = w.ana[1], w.ana[2], w.ana[3].split("/")[-1]
 
+    @staticmethod
+    def __stem_in_dict(stem, stem_dict) -> bool:
+        return any(re.search(regex + "$", stem) for regex in stem_dict)
+
     @skip_none
     def _part_el(self, stem) -> str:
         # Основы-исключения
@@ -157,12 +161,14 @@ class Verb(MSD):
 
         return stem + "ТИ"
 
-    def cls_3(self, stem) -> str:
+    def cls_3(self, stem) -> str:  # TODO
         if stem.endswith(letters.vows):
             if stem.endswith("У"):
                 stem = stem[:-1] + (
                     "ЕВА" if stem.endswith(letters.cons_hush) else "ОВА"
                 )
+            elif self.__stem_in_dict(stem, utils.verbs.cls_v_1_b):
+                stem += "Я"
         else:
             # Сочетания с йотом
             if stem.endswith(letters.cons_hush) or stem.endswith(letters.cons_sonor):
@@ -172,8 +178,14 @@ class Verb(MSD):
             if stem.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
                 stem = stem[:-2] + "Я"
 
+            elif self.__stem_in_dict(stem, utils.verbs.cls_v_2):
+                stem = stem[:-2] + "О" + stem[-1] + "О"
+
+            elif self.__stem_in_dict(stem, utils.verbs.cls_viii):
+                stem += "ВА"
+
             elif stem.endswith(letters.cons):
-                stem += "+" if stem == "ХОТ" else "А"
+                stem += "+" if stem.endswith("ХОТ") else "А"
 
         return stem + "ТИ"
 
@@ -181,9 +193,9 @@ class Verb(MSD):
         if stem.endswith(letters.cons_hush) or stem.endswith(letters.cons_sonor):
             stem = self.modify_jotted_stem(stem)
 
-        if any(re.search(regex + "$", stem) for regex in utils.verbs.cls_x_e):
+        if self.__stem_in_dict(stem, utils.verbs.cls_x_e):
             stem += "+"
-        elif any(re.search(regex + "$", stem) for regex in utils.verbs.cls_x_a):
+        elif self.__stem_in_dict(stem, utils.verbs.cls_x_a):
             stem += "А" if stem.endswith(letters.cons_hush) else "Я"
         else:
             stem += "И"

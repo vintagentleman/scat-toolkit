@@ -98,19 +98,9 @@ class Participle(Verb):
         if stem.endswith(letters.cons_hush + letters.cons_sonor):
             stem = self.modify_jotted_stem(stem) + "И"
 
-        # Чередование /u:/: 'вдохновенный', 'проникновенный'; 'омовенный', 'незабвенный'. Но - 'благословенный'
+        # Чередование /u:/
         elif suff and suff.group().startswith("ЕН"):
-            mo = re.search("[ОЪ]?В$", stem)
-
-            if not stem.endswith("СЛОВ") and mo:
-                stem = stem[: -len(mo.group())]
-
-                if stem[-1] == "Н":
-                    stem += "У"
-                else:
-                    stem += "Ы"
-            else:
-                stem += "И"
+            stem = self.modify_uu(stem)
 
         # 4 класс
         elif stem[-1] in letters.cons or stem in utils.verbs.cls_iv_vow:

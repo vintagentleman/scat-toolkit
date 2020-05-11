@@ -120,6 +120,27 @@ class MSD:
         if re.search("ШИБ$", s):
             return s + "ИТИ"
 
+    def modify_uu(self, s):
+        assert self.pos.startswith(("гл", "прич"))
+
+        if s.endswith("ЖИВ"):
+            return s[:-1]
+        if s.endswith("СЛОВ"):
+            return s + "И"
+
+        mo = re.search("[ОЪ]?В$", s)
+        if mo:
+            s = s[: -len(mo.group())]
+
+            if s[-1] == "З":
+                s += "ВА"
+            elif s[-1] == "Н":
+                s += "У"
+            else:
+                s += "Ы"
+
+        return s
+
     @property
     def value(self):
         return []

@@ -123,19 +123,10 @@ class Verb(MSD):
             return lemma
 
         # Чередование /u:/
-        mo = re.search("[ОЪ]?В$", stem)
-        if mo:
-            stem = stem[: -len(mo.group())]
-
-            if stem[-1] == "З":
-                stem += "ВА"
-            elif stem[-1] == "Н":
-                stem += "У"
-            else:
-                stem += "Ы"
+        stem = self.modify_uu(stem)
 
         # Чередование носовых
-        elif stem.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
+        if stem.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
             stem = stem[:-2] + "Я"
         elif stem.endswith(("М", "Н")):
             stem = stem[:-1] + ("А" if stem[:-1].endswith(letters.cons_hush) else "Я")

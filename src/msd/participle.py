@@ -164,12 +164,21 @@ class Participle(Verb):
             if lemma is not None:
                 return lemma
 
-            return (
+            lemma = (
                 self._act_pres(stem, suff)
                 if self.voice == "акт"
                 else self._pas_pres(stem, suff)
             )
-        return self._act_past(stem) if self.voice == "акт" else self._pas_past(stem)
+
+        else:
+            lemma = (
+                self._act_past(stem) if self.voice == "акт" else self._pas_past(stem)
+            )
+
+        if lemma != "None" and self.refl:
+            lemma += "СЯ"
+
+        return lemma
 
     @property
     def value(self):

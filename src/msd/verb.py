@@ -41,9 +41,6 @@ class Verb(MSD):
 
     @skip_none
     def _part_el(self, stem) -> str:
-        if stem is None:
-            return "None"
-
         # Основы-исключения
         s_modif = self.get_spec_stem(stem, utils.spec.part_el)
         if stem != s_modif:

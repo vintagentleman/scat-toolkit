@@ -40,7 +40,7 @@ class Verb(MSD):
             self.pers, self.num, self.cls = w.ana[1], w.ana[2], w.ana[3].split("/")[-1]
 
     @staticmethod
-    def __stem_in_dict(stem, stem_dict) -> bool:
+    def stem_in_dict(stem, stem_dict) -> bool:
         return any(re.search(regex + "$", stem) for regex in stem_dict)
 
     @skip_none
@@ -167,7 +167,7 @@ class Verb(MSD):
                 stem = stem[:-1] + (
                     "ЕВА" if stem.endswith(letters.cons_hush) else "ОВА"
                 )
-            elif self.__stem_in_dict(stem, utils.verbs.cls_v_1_b):
+            elif self.stem_in_dict(stem, utils.verbs.cls_v_1_b):
                 stem += "Я"
         else:
             # Сочетания с йотом
@@ -178,10 +178,10 @@ class Verb(MSD):
             if stem.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
                 stem = stem[:-2] + "Я"
 
-            elif self.__stem_in_dict(stem, utils.verbs.cls_v_2):
+            elif self.stem_in_dict(stem, utils.verbs.cls_v_2):
                 stem = stem[:-2] + "О" + stem[-1] + "О"
 
-            elif self.__stem_in_dict(stem, utils.verbs.cls_viii):
+            elif self.stem_in_dict(stem, utils.verbs.cls_viii):
                 stem += "ВА"
 
             elif stem.endswith(letters.cons):
@@ -193,9 +193,9 @@ class Verb(MSD):
         if stem.endswith(letters.cons_hush) or stem.endswith(letters.cons_sonor):
             stem = self.modify_jotted_stem(stem)
 
-        if self.__stem_in_dict(stem, utils.verbs.cls_x_e):
+        if self.stem_in_dict(stem, utils.verbs.cls_x_e):
             stem += "+"
-        elif self.__stem_in_dict(stem, utils.verbs.cls_x_a):
+        elif self.stem_in_dict(stem, utils.verbs.cls_x_a):
             stem += "А" if stem.endswith(letters.cons_hush) else "Я"
         else:
             stem += "И"
@@ -250,9 +250,11 @@ class Verb(MSD):
         # Удаление нестяжённых вокалических сочетаний
         stretch = re.search(r"([+Е][АЯ]|АА|ЯЯ)$", stem)
         if stretch:
-            stem = stem[:-2] + stem[-1]
-
-        stem = stem[:-1]
+            theme = stem[-2]
+            stem = stem[:-2]
+        else:
+            theme = stem[-1]
+            stem = stem[:-1]
 
         # Основы-исключения
         for regex in utils.spec.imperfect:
@@ -275,12 +277,17 @@ class Verb(MSD):
             return s_modif + "ИТИ"
 
         # Второе спряжение
-        if stem in utils.verbs.cls_x_a:
-            return stem + "АТИ"
-        if stem in utils.verbs.cls_x_e:
-            return stem + "+ТИ"
+        if self.stem_in_dict(stem, utils.verbs.cls_x_e):
+            stem += "+"
+        elif self.stem_in_dict(stem, utils.verbs.cls_x_a):
+            stem += "А" if stem.endswith(letters.cons_hush) else "Я"
+        elif self.stem_in_dict(stem, utils.verbs.cls_x_i):
+            stem += "И"
+        # I/5 подкласс
+        elif not re.match(r".{,2}[БВЛПШ]]И", stem):
+            stem += theme
 
-        # Иначе возвращаем форму на гласную
+        # Иначе возвращаем форму
         return stem + "ТИ"
 
     def get_lemma(self) -> str:

@@ -34,27 +34,33 @@ class Participle(Verb):
         self.voice = "пас" if self.d_old in ("a", "o", "тв") else "акт"
 
     def _act_pres(self, stem, suff) -> str:
+        if suff in ("Ы", "УЩ"):
+            return self.cls_2(stem) if stem.endswith("Н") else self.cls_1(stem)
         if suff == "ЮЩ" or (
             suff == "УЩ" and stem.endswith(letters.cons_hush + letters.cons_sonor)
         ):
             return self.cls_3(stem)
-        if suff in ("Ы", "УЩ"):
-            return self.cls_2(stem) if stem.endswith("Н") else self.cls_1(stem)
         if suff == "ЯЩ":
             return self.cls_4(stem)
-        if stem.endswith(letters.vows):
+        if stem.endswith(("А", "+")):
             return self.cls_3(stem)
-        if suff in ("А", "Я"):  # Здесь невозможно определить, 3 класс или 4
-            return self.cls_4(stem)
+        if suff in ("А", "Я"):
+            if self.stem_in_dict(stem, utils.verbs.cls_x_e):
+                return stem + "+ТИ"
+            if self.stem_in_dict(stem, utils.verbs.cls_x_a):
+                return stem + ("А" if stem.endswith(letters.cons_hush) else "Я") + "ТИ"
+            if self.stem_in_dict(stem, utils.verbs.cls_x_i):
+                return stem + "ИТИ"
+            return self.cls_3(stem)
         return "None"
 
     def _pas_pres(self, stem, suff) -> str:
         if suff == "ОМ":
             return self.cls_1(stem)
-        if suff == "ИМ":
-            return self.cls_4(stem)
         if suff == "ЕМ":
             return self.cls_3(stem)
+        if suff == "ИМ":
+            return self.cls_4(stem)
         return "None"
 
     def _act_past(self, stem) -> str:

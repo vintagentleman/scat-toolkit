@@ -34,13 +34,15 @@ class Participle(Verb):
         self.voice = "пас" if self.d_old in ("a", "o", "тв") else "акт"
 
     def _act_pres(self, stem, suff) -> str:
+        if self.stem_in_dict(stem, utils.verbs.cls_vii_2):
+            return self.cls_1(stem)
         if suff in ("Ы", "УЩ"):
             return self.cls_2(stem) if stem.endswith("Н") else self.cls_1(stem)
         if suff == "ЮЩ" or (
             suff == "УЩ" and stem.endswith(letters.cons_hush + letters.cons_sonor)
         ):
             return self.cls_3(stem)
-        if suff == "ЯЩ":
+        if suff in ("АЩ", "ЯЩ", "ИЩ"):
             return self.cls_4(stem)
         if stem.endswith(("А", "+")):
             return self.cls_3(stem)
@@ -132,11 +134,9 @@ class Participle(Verb):
                 self.reg, (self.d_new, self.case, self.num, self.gen), utils.infl.noun
             )
 
-            if stem is None and self.d_old in ("ja", "jo"):
+            if stem is None and self.d_old == "ja":
                 stem = self.get_stem(
-                    self.reg,
-                    (self.d_old[1:], self.case, self.num, self.gen),
-                    utils.infl.noun,
+                    self.reg, ("jo", self.case, self.num, self.gen), utils.infl.noun,
                 )
 
         if stem is None:
@@ -148,12 +148,13 @@ class Participle(Verb):
             suff = None
 
             if self.voice == "акт":
-                mo = re.search(
-                    r"[АЫЯ]$"
-                    if (self.d_new, self.case, self.num) == ("jo", "им", "ед")
-                    else r".Щ$",
-                    stem,
-                )
+                mo = re.search(r".Щ$", stem)
+
+                if mo is None and (self.d_new, self.case, self.num) in (
+                    ("jo", "им", "ед"),
+                    ("м", "им", "ед"),
+                ):
+                    mo = re.search(r"[АЫЯ]$", stem)
             else:
                 mo = re.search(r".М$", stem)
 

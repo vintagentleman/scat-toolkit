@@ -28,7 +28,7 @@ class Verb(MSD):
             )
             self.role, self.cls = (
                 ("", w.ana[4].split("/")[-1])
-                if w.ana[4].isnumeric()
+                if w.ana[4].split("/")[-1].isnumeric()
                 else (w.ana[4], "")
             )
         elif self.mood == "сосл":
@@ -64,7 +64,7 @@ class Verb(MSD):
     @skip_none
     def _aor_simp(self, stem) -> str:
         # Основы настоящего времени
-        if stem.endswith(utils.verbs.cls_vii_2):
+        if self.stem_in_dict(stem, utils.verbs.cls_vii_2):
             stem = stem[:-1]
 
         # Первая палатализация
@@ -96,11 +96,12 @@ class Verb(MSD):
         # Осложнение тематического суффикса
         if self.tense == "аор нов" and stem.endswith("О"):
             stem = stem[:-1]
-        elif self.tense == "аор гл":
+
+        if self.tense == "аор гл":
             return stem + "ТИ"
 
         # Основы настоящего времени
-        if stem.endswith(utils.verbs.cls_vii_2):
+        if self.stem_in_dict(stem, utils.verbs.cls_vii_2):
             stem = stem[:-1]
 
         # Удлинение корневого гласного
@@ -136,7 +137,7 @@ class Verb(MSD):
             stem = stem[:-1] + ("А" if stem[:-1].endswith(letters.cons_hush) else "Я")
 
         # Основы со вставкой
-        elif stem.endswith(utils.verbs.cls_vii_2):
+        elif self.stem_in_dict(stem, utils.verbs.cls_vii_2):
             stem = stem[:-1]
 
         # Приставочные дериваты БЫТИ
@@ -161,7 +162,7 @@ class Verb(MSD):
 
         return stem + "ТИ"
 
-    def cls_3(self, stem) -> str:  # TODO
+    def cls_3(self, stem) -> str:
         if stem.endswith(letters.vows):
             if stem.endswith("У"):
                 stem = stem[:-1] + (
@@ -232,7 +233,7 @@ class Verb(MSD):
     @skip_none
     def _imperative(self, stem) -> str:
         # Удаление тематических гласных
-        if (self.pers, self.num) != ("2", "ед"):
+        if (self.pers, self.num) not in (("2", "ед"), ("3", "ед")):
             stem = stem[:-1]
 
         # Вторая палатализация
@@ -284,10 +285,9 @@ class Verb(MSD):
         elif self.stem_in_dict(stem, utils.verbs.cls_x_i):
             stem += "И"
         # I/5 подкласс
-        elif not re.match(r".{,2}[БВЛПШ]]И", stem):
+        elif not self.stem_in_dict(stem, utils.verbs.cls_i_5):
             stem += theme
 
-        # Иначе возвращаем форму
         return stem + "ТИ"
 
     def get_lemma(self) -> str:

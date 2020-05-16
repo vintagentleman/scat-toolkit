@@ -47,6 +47,9 @@ class Participle(Verb):
         if stem.endswith(("А", "+")):
             return self.cls_3(stem)
         if suff in ("А", "Я"):
+            if stem.endswith(letters.cons_hush) or stem.endswith(letters.cons_sonor):
+                stem = self.modify_jotted_stem(stem)
+
             if self.stem_in_dict(stem, utils.verbs.cls_x_e):
                 return stem + "+ТИ"
             if self.stem_in_dict(stem, utils.verbs.cls_x_a):
@@ -118,6 +121,8 @@ class Participle(Verb):
         return stem + "ТИ"
 
     def get_lemma(self) -> str:
+        suff = None
+
         if self.d_old in ("тв", "м"):
             stem = self.get_stem(
                 self.reg,
@@ -129,7 +134,10 @@ class Participle(Verb):
                 stem = self.get_stem(
                     self.reg, ("тв", self.case, self.num, self.gen), utils.infl.pronoun,
                 )
-        else:
+        elif (self.voice, self.case, self.num, self.gen) not in (
+            ("акт", "им", "ед", "м"),
+            ("акт", "им", "ед", "ср"),
+        ):
             stem = self.get_stem(
                 self.reg, (self.d_new, self.case, self.num, self.gen), utils.infl.noun
             )
@@ -138,29 +146,25 @@ class Participle(Verb):
                 stem = self.get_stem(
                     self.reg, ("jo", self.case, self.num, self.gen), utils.infl.noun,
                 )
+        else:
+            stem = self.reg[:-1]
+            suff = self.reg[-1]
 
         if stem is None:
-            if (self.d_new, self.case, self.num) != ("jo", "им", "ед"):
-                return "None"
-            stem = self.reg
+            return "None"
 
         if self.tense == "наст":
-            suff = None
+            if suff is None:
+                if self.voice == "акт":
+                    mo = re.search(r".Щ$", stem)
+                    if mo is None:
+                        mo = re.search(r"[АЫЯ]$", stem)
+                else:
+                    mo = re.search(r".М$", stem)
 
-            if self.voice == "акт":
-                mo = re.search(r".Щ$", stem)
-
-                if mo is None and (self.d_new, self.case, self.num) in (
-                    ("jo", "им", "ед"),
-                    ("м", "им", "ед"),
-                ):
-                    mo = re.search(r"[АЫЯ]$", stem)
-            else:
-                mo = re.search(r".М$", stem)
-
-            if mo is not None:
-                suff = mo.group()
-                stem = stem[: -len(suff)]
+                if mo is not None:
+                    suff = mo.group()
+                    stem = stem[: -len(suff)]
 
             # 5 класс
             lemma = self.cls_5(stem)

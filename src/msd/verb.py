@@ -380,4 +380,9 @@ class Verb(MSD):
 
     @property
     def value(self):
-        return []  # TODO
+        return (
+            [self.mood] + [self.tense]
+            if self.mood == "изъяв"
+            else []
+            + [self.gen if hasattr(self, "gen") and self.gen else self.pers, self.num]
+        )

@@ -15,11 +15,46 @@ class Annotator:
         self.db = shelve.open(str(Path.joinpath(__root__, "out", db)))
         self.filename = Path.joinpath(__root__, "inp", "raw", filename)
 
-        self.tagsets = json.load(
+        self.clusters = json.load(
             Path.joinpath(__root__, "src", "utils", "tagsets.json").open(
                 encoding="utf-8"
             )
         )
+
+    def get_msd(self, form):
+        tagsets = self.db[form]
+        copy = tagsets[:]
+
+        for i, tagset in enumerate(copy):
+            # Пропускаем неизменяемые ЧР
+            if len(tagset) == 1:
+                continue
+
+            # У причастий пропускаем для сопоставления колонку с временем, иначе только ЧР
+            pos = tagset[0]
+            subtagset = [tagset[1]] + tagset[3:] if pos == "прич" else tagset[1:]
+
+            for cluster in self.clusters:
+                if subtagset in cluster:
+                    # У причастий восстанавливаем пропущенные колонки
+                    tagsets += (
+                        [
+                            [tagset[0], list_[0], tagset[1]] + list_[1:]
+                            for list_ in cluster
+                        ]
+                        if pos == "прич"
+                        else [[tagset[0]] + list_ for list_ in cluster]
+                    )
+                    del tagsets[i]
+                    break
+
+        # Добавляем пустые колонки в конец
+        # У глаголов добавляем пустые колонки под наклонение и время
+        return [
+            ([tagset[0], "", ""] + tagset[1:] if tagset[0] == "гл" else tagset)
+            + [""] * (6 - len(tagset))
+            for tagset in tagsets
+        ]
 
     def run(self, students=10, workload=250, offset=0):
         df = pd.read_csv(self.filename, sep="\t", header=None, na_filter=False)
@@ -45,22 +80,13 @@ class Annotator:
                     form = word.reg
 
                     if form in self.db:
-                        msd = self.db[form]
-
-                        if len(msd[0]) > 1:
-                            for cluster in self.tagsets:
-                                if len(
-                                    # Не учитываем ЧР при сопоставлении с tagsets.json
-                                    set([tuple(tagset[1:]) for tagset in msd])
-                                    & set(map(tuple, cluster))
-                                ):
-                                    # Но восстанавливаем её, если найдено дополнение
-                                    msd = [[msd[0][0]] + tagset for tagset in cluster]
-                                    break
+                        msd = self.get_msd(form)
 
                         # Если разбор один, то помечаем его и не учитываем при подсчёте
                         if len(msd) == 1:
-                            sheet.write(i, 0, row[0], correct)
+                            sheet.write(
+                                i, 0, row[0], correct if msd[0][0] != "гл" else None
+                            )
                             sheet.write_row(i, 1, msd[0])
                             limit += 1
                         # Если нет, то выделяем неоднозначные позиции

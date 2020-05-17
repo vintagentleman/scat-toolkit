@@ -47,9 +47,16 @@ class Annotator:
                     if form in self.db:
                         msd = self.db[form]
 
-                        for cluster in self.tagsets:
-                            if len(set(map(tuple, msd)) & set(map(tuple, cluster))):
-                                msd = cluster
+                        if len(msd[0]) > 1:
+                            for cluster in self.tagsets:
+                                if len(
+                                    # Не учитываем ЧР при сопоставлении с tagsets.json
+                                    set([tuple(tagset[1:]) for tagset in msd])
+                                    & set(map(tuple, cluster))
+                                ):
+                                    # Но восстанавливаем её, если найдено дополнение
+                                    msd = [[msd[0][0]] + tagset for tagset in cluster]
+                                    break
 
                         # Если разбор один, то помечаем его и не учитываем при подсчёте
                         if len(msd) == 1:

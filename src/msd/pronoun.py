@@ -38,4 +38,4 @@ class Pronoun(MSD):
 
     @property
     def value(self):
-        return ["личн", self.pers, self.case, self.num]
+        return [self.pos, "личн", self.pers, self.case, self.num]

@@ -194,4 +194,4 @@ class Participle(Verb):
 
     @property
     def value(self):
-        return [self.d_old, "", self.case, self.num, self.gen]
+        return [self.pos, self.d_old, self.tense, self.case, self.num, self.gen]

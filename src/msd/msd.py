@@ -143,4 +143,4 @@ class MSD:
 
     @property
     def value(self):
-        return []
+        return [self.pos]

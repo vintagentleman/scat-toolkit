@@ -43,8 +43,8 @@ class PKLWriter(Writer):
     def write(self, *args):
         msd = self.stream.setdefault(args[0], [])
 
-        if args[1:] not in msd:
-            msd.append(args[1:])
+        if args[1] not in msd:
+            msd.append(args[1])
 
 
 class XMLWriter(Writer):

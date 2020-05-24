@@ -70,7 +70,7 @@ class Participle(Verb):
 
     def _act_past(self, stem) -> str:
         # Удаление словоизменительных суффиксов
-        suff = re.search("В$|В?[ЪЬ]?Ш$", stem)
+        suff = re.search("В$|В?[ЕЪЬ]?Ш$", stem)
         if suff:
             stem = stem[: -len(suff.group())]
 
@@ -100,9 +100,7 @@ class Participle(Verb):
             stem = stem[: -len(suff.group())]
 
         # Основы на согласный
-        lemma = self.modify_cons_stem(
-            stem[:-1] + letters.palat_1.get(stem[-1], stem[-1])
-        )
+        lemma = self.modify_cons_stem(self.palat(stem, "1"))
         if lemma is not None:
             return lemma
 
@@ -112,10 +110,12 @@ class Participle(Verb):
 
         # Чередование /u:/
         elif suff and suff.group().startswith("ЕН"):
-            stem = self.modify_uu(stem)
+            stem = self.modify_uu(stem) if stem[-1] == "В" else stem + "И"
 
         # 4 класс
-        elif stem[-1] in letters.cons or stem in utils.verbs.cls_iv_vow:
+        elif stem[-1] in letters.cons or self.stem_in_dict(
+            stem, utils.verbs.cls_iv_vow
+        ):
             stem += "НУ"
 
         return stem + "ТИ"
@@ -168,19 +168,17 @@ class Participle(Verb):
 
             # 5 класс
             lemma = self.cls_5(stem)
-            if lemma is not None:
-                return lemma
 
-            # Основы на согласный
-            lemma = self.modify_cons_stem(stem)
-            if lemma is not None:
-                return lemma
+            if lemma is None:
+                # Основы на согласный
+                lemma = self.modify_cons_stem(stem)
 
-            lemma = (
-                self._act_pres(stem, suff)
-                if self.voice == "акт"
-                else self._pas_pres(stem, suff)
-            )
+                if lemma is None:
+                    lemma = (
+                        self._act_pres(stem, suff)
+                        if self.voice == "акт"
+                        else self._pas_pres(stem, suff)
+                    )
 
         else:
             lemma = (

@@ -11,6 +11,18 @@ class MSD:
         self.pos = w.pos
 
     @staticmethod
+    def palat(stem, type_) -> str:
+        return (
+            stem
+            if len(stem) == 1
+            else stem[:-1] + getattr(letters, "palat_" + type_).get(stem[-1], stem[-1])
+        )
+
+    @staticmethod
+    def stem_in_dict(stem, stem_dict) -> bool:
+        return any(re.search(regex + "$", stem) for regex in stem_dict)
+
+    @staticmethod
     def get_stem(form, msd: tuple, fl_dict: dict):
         if msd in fl_dict:
             fl = re.search("({}|`)$".format(fl_dict[msd]), form)
@@ -56,7 +68,7 @@ class MSD:
         if s.endswith(("Ж", "ЖД")):
             stem = s[:-2] if s.endswith("ЖД") else s[:-1]
 
-            for cons in ("Д", "З", "ЗД"):
+            for cons in ("Г", "Д", "З", "ЗД"):
                 if any(
                     re.search(regex + "$", stem + cons)
                     for regex in utils.verbs.jotted_zh
@@ -66,7 +78,7 @@ class MSD:
         elif s.endswith(("Ч", "Щ", "ШТ")):
             stem = s[:-2] if s.endswith("ШТ") else s[:-1]
 
-            for cons in ("Т", "СТ", "СК"):
+            for cons in ("К", "Т", "СК", "СТ"):
                 if any(
                     re.search(regex + "$", stem + cons)
                     for regex in utils.verbs.jotted_tsch
@@ -81,44 +93,42 @@ class MSD:
         return s
 
     def modify_cons_stem(self, s):
+        def __sub_cls(stem, dict_, suff):
+            for regex in dict_:
+                mo = re.match(r"(.*){}$".format(regex), stem)
+                if mo:
+                    return (
+                        re.sub(
+                            r"(.*){}$".format(regex), mo.group(1) + dict_[regex], stem,
+                        )
+                        + suff
+                    )
+            return None
+
         assert self.pos.startswith(("гл", "прич"))
 
         # Подкласс VII/1
-        if re.search(r"({})$".format("|".join(utils.verbs.cls_vii_1)), s):
-            return s + "СТИ"
+        lemma = __sub_cls(s, utils.verbs.cls_vii_1, "СТИ")
+        if lemma is not None:
+            return lemma
 
         # Группа VI/2/а
-        for regex in utils.verbs.cls_vi_2_a:
-            mo = re.match(r"(.*){}$".format(regex), s)
-            if mo:
-                return (
-                    re.sub(
-                        "(.*){}$".format(regex),
-                        mo.group(1) + utils.verbs.cls_vi_2_a[regex],
-                        s,
-                    )
-                    + "ТИ"
-                )
+        lemma = __sub_cls(s, utils.verbs.cls_vi_2_a, "ТИ")
+        if lemma is not None:
+            return lemma
 
         # Подкласс VI/1
-        for regex in utils.verbs.cls_vi_1:
-            if re.search(r"{}$".format(regex), s):
-                s = s[:-1]
-
-                # Чередование с нулём
-                if s == "ТОЛ":
-                    s += "О"
-                elif s in ("Ж", "Р"):
-                    s += "Е"
-
-                return s + "ЩИ"
+        lemma = __sub_cls(s, utils.verbs.cls_vi_1, "ЩИ")
+        if lemma is not None:
+            return lemma
 
         # Группа VI/2/б
         if re.search("[МПТ][ЕЬ]?Р$", s):
             return s + "+ТИ"
+
         # Группа VI/2/в
         if re.search("ШИБ$", s):
-            return s + "ИТИ"
+            return s[:-2] + "ИТИ"
 
     def modify_uu(self, s):
         assert self.pos.startswith(("гл", "прич"))

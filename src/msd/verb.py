@@ -27,8 +27,8 @@ class Verb(MSD):
                 (w.ana[2], "") if w.ana[2].isnumeric() else ("", w.ana[2])
             )
             self.role, self.cls = (
-                ("", w.ana[4].split("/")[-1])
-                if w.ana[4].split("/")[-1].isnumeric()
+                ("", w.ana[4].split("/")[0])
+                if w.ana[4].split("/")[0].isnumeric()
                 else (w.ana[4], "")
             )
         elif self.mood == "сосл":
@@ -37,11 +37,7 @@ class Verb(MSD):
             )
             self.num, self.role = w.ana[2].split("/")[-1], w.ana[3]
         else:
-            self.pers, self.num, self.cls = w.ana[1], w.ana[2], w.ana[3].split("/")[-1]
-
-    @staticmethod
-    def stem_in_dict(stem, stem_dict) -> bool:
-        return any(re.search(regex + "$", stem) for regex in stem_dict)
+            self.pers, self.num, self.cls = w.ana[1], w.ana[2], w.ana[3].split("/")[0]
 
     @skip_none
     def _part_el(self, stem) -> str:
@@ -69,7 +65,7 @@ class Verb(MSD):
 
         # Первая палатализация
         if stem[-1] in "ЧЖШ":
-            stem = stem[:-1] + letters.palat_1[stem[-1]]
+            stem = self.palat(stem, "1")
 
         # Основы на согласный
         lemma = self.modify_cons_stem(stem)
@@ -85,7 +81,7 @@ class Verb(MSD):
     def _aor_sigm(self, stem) -> str:
         # Простейший случай
         if self.tense == "аор гл" and self.pers in ("2", "3") and self.num == "ед":
-            mo = re.search("С?Т[ЪЬ`]$", self.reg)
+            mo = re.search("(?<!\+)С?Т[ЪЬ`]$", self.reg)
             if mo:
                 return self.reg[: -len(mo.group())] + "ТИ"
             return self.reg + "ТИ"
@@ -98,7 +94,11 @@ class Verb(MSD):
             stem = stem[:-1]
 
         if self.tense == "аор гл":
-            return stem + "ТИ"
+            return (
+                stem[:-2]
+                if self.stem_in_dict(stem[:-1], utils.verbs.cls_vii_2)
+                else stem
+            ) + "ТИ"
 
         # Основы настоящего времени
         if self.stem_in_dict(stem, utils.verbs.cls_vii_2):
@@ -131,10 +131,11 @@ class Verb(MSD):
         stem = self.modify_uu(stem)
 
         # Чередование носовых
-        if stem.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
-            stem = stem[:-2] + "Я"
-        elif stem.endswith(("М", "Н")):
-            stem = stem[:-1] + ("А" if stem[:-1].endswith(letters.cons_hush) else "Я")
+        nasal = re.search(r"[ЕИ]?[МН]$", stem)
+        if nasal:
+            stem = stem[: -len(nasal.group())] + (
+                "А" if stem[: -len(nasal.group())].endswith(letters.cons_hush) else "Я"
+            )
 
         # Основы со вставкой
         elif self.stem_in_dict(stem, utils.verbs.cls_vii_2):
@@ -153,14 +154,15 @@ class Verb(MSD):
 
         return stem + "ТИ"
 
-    @staticmethod
-    def cls_2(stem) -> str:
-        if stem.endswith(utils.verbs.cls_vii_3):
-            stem = stem[:-1]
-        else:
-            stem += "У"
+    def cls_2(self, stem) -> str:
+        # Основы на согласный
+        lemma = self.modify_cons_stem(stem[:-1])
+        if lemma is not None:
+            return lemma
 
-        return stem + "ТИ"
+        if stem.endswith(utils.verbs.cls_vii_3):
+            return stem[:-1] + "ТИ"
+        return stem + "УТИ"
 
     def cls_3(self, stem) -> str:
         if stem.endswith(letters.vows):
@@ -176,8 +178,13 @@ class Verb(MSD):
                 stem = self.modify_jotted_stem(stem)
 
             # Чередование носовых
-            if stem.endswith(("ЕМ", "ЕН", "ИМ", "ИН")):
-                stem = stem[:-2] + "Я"
+            nasal = re.search(r"[ЕИ]?[МН]$", stem)
+            if nasal:
+                stem = stem[: -len(nasal.group())] + (
+                    "А"
+                    if stem[: -len(nasal.group())].endswith(letters.cons_hush)
+                    else "Я"
+                )
 
             elif self.stem_in_dict(stem, utils.verbs.cls_v_2):
                 stem = stem[:-2] + "О" + stem[-1] + "О"
@@ -237,10 +244,7 @@ class Verb(MSD):
             stem = stem[:-1]
 
         # Вторая палатализация
-        lemma = self.modify_cons_stem(
-            stem[:-1] + letters.palat_2.get(stem[-1], stem[-1])
-        )
-
+        lemma = self.modify_cons_stem(self.palat(stem, "2"))
         if lemma is not None:
             return lemma
 

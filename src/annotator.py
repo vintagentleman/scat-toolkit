@@ -16,7 +16,7 @@ class Annotator:
         self.filename = Path.joinpath(__root__, "inp", "raw", filename)
 
         self.clusters = json.load(
-            Path.joinpath(__root__, "src", "utils", "tagsets.json").open(
+            Path.joinpath(__root__, "src", "utils", "clusters.json").open(
                 encoding="utf-8"
             )
         )
@@ -30,31 +30,34 @@ class Annotator:
             if len(tagset) == 1:
                 continue
 
-            # У причастий пропускаем для сопоставления колонку с временем, иначе только ЧР
             pos = tagset[0]
-            subtagset = [tagset[1]] + tagset[3:] if pos == "прич" else tagset[1:]
+            # У глаголов пропускаем для сопоставления колонки с наклонением и временем
+            if pos == "гл":
+                subtagset = tagset[3:]
+            # У причастий пропускаем только время
+            if pos == "прич":
+                subtagset = [tagset[1]] + tagset[3:]
+            # У прочих только ЧР
+            else:
+                subtagset = tagset[1:]
 
             for cluster in self.clusters:
                 if subtagset in cluster:
-                    # У причастий восстанавливаем пропущенные колонки
-                    tagsets += (
-                        [
-                            [tagset[0], list_[0], tagset[1]] + list_[1:]
-                            for list_ in cluster
+                    # Восстанавливаем пропущенные колонки
+                    if pos == "гл":
+                        tagsets += [tagset[:3] + list_ for list_ in cluster]
+                    elif pos == "прич":
+                        tagsets += [
+                            [pos, list_[0], tagset[2]] + list_[1:] for list_ in cluster
                         ]
-                        if pos == "прич"
-                        else [[tagset[0]] + list_ for list_ in cluster]
-                    )
+                    else:
+                        tagsets += [[pos] + list_ for list_ in cluster]
+
                     del tagsets[i]
                     break
 
         # Добавляем пустые колонки в конец
-        # У глаголов добавляем пустые колонки под наклонение и время
-        return [
-            ([tagset[0], "", ""] + tagset[1:] if tagset[0] == "гл" else tagset)
-            + [""] * (6 - len(tagset))
-            for tagset in tagsets
-        ]
+        return [tagset + [""] * (6 - len(tagset)) for tagset in tagsets]
 
     def run(self, students=10, workload=250, offset=0):
         df = pd.read_csv(self.filename, sep="\t", header=None, na_filter=False)

@@ -154,12 +154,8 @@ class Verb(MSD):
 
         return stem + "ТИ"
 
-    def cls_2(self, stem) -> str:
-        # Основы на согласный
-        lemma = self.modify_cons_stem(stem[:-1])
-        if lemma is not None:
-            return lemma
-
+    @staticmethod
+    def cls_2(stem) -> str:
         if stem.endswith(utils.verbs.cls_vii_3):
             return stem[:-1] + "ТИ"
         return stem + "УТИ"

@@ -93,33 +93,32 @@ class MSD:
 
         return s
 
-    def modify_cons_stem(self, s):
-        def __sub_cls(stem, dict_, suff):
-            for regex in dict_:
-                mo = re.match(r"(.*){}$".format(regex), stem)
-                if mo:
-                    return (
-                        re.sub(
-                            r"(.*){}$".format(regex), mo.group(1) + dict_[regex], stem,
-                        )
-                        + suff
-                    )
-            return None
+    @staticmethod
+    def get_dict_lemma(stem, dict_, suff):
+        for regex in dict_:
+            mo = re.match(r"(.*){}$".format(regex), stem)
+            if mo:
+                return (
+                    re.sub(r"(.*){}$".format(regex), mo.group(1) + dict_[regex], stem,)
+                    + suff
+                )
+        return None
 
+    def modify_cons_stem(self, s):
         assert self.pos.startswith(("гл", "прич"))
 
         # Подкласс VII/1
-        lemma = __sub_cls(s, utils.verbs.cls_vii_1, "СТИ")
+        lemma = self.get_dict_lemma(s, utils.verbs.cls_vii_1, "СТИ")
         if lemma is not None:
             return lemma
 
         # Группа VI/2/а
-        lemma = __sub_cls(s, utils.verbs.cls_vi_2_a, "ТИ")
+        lemma = self.get_dict_lemma(s, utils.verbs.cls_vi_2_a, "ТИ")
         if lemma is not None:
             return lemma
 
         # Подкласс VI/1
-        lemma = __sub_cls(s, utils.verbs.cls_vi_1, "ЩИ")
+        lemma = self.get_dict_lemma(s, utils.verbs.cls_vi_1, "ЩИ")
         if lemma is not None:
             return lemma
 

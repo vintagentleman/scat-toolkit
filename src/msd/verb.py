@@ -385,8 +385,20 @@ class Verb(MSD):
 
     @property
     def pickled(self):
+        if hasattr(self, "gen") and self.gen:
+            return [self.pos, "", "", self.gen, self.num]
+        if self.lemma == "БЫТИ":
+            return [self.pos, "", "", self.pers, self.num]
+        if (
+            hasattr(self, "tense")
+            and re.match(r"(н/б|буд ?1)", self.tense)
+            and self.lemma in ("НАЧАТИ", "ХОТ+ТИ", "ИМ+ТИ")
+        ):
+            return [self.pos, self.mood, "", self.pers, self.num]
         return [
             self.pos,
-            self.gen if hasattr(self, "gen") and self.gen else self.pers,
+            self.mood,
+            self.tense if hasattr(self, "tense") else "",
+            self.pers,
             self.num,
         ]

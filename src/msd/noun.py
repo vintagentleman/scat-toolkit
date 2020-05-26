@@ -208,7 +208,8 @@ class Noun(MSD):
                 return "ИЕ"
             return "И"
 
-    def get_lemma(self) -> str:
+    @property
+    def lemma(self) -> str:
         # Проверка на исключительность
         for key in utils.spec.noun:
             if re.match(key, self.reg):
@@ -273,5 +274,5 @@ class Noun(MSD):
         return stem + self.get_infl(stem)
 
     @property
-    def value(self):
+    def pickled(self):
         return [self.pos, self.d_old, self.case, self.num, self.gen]

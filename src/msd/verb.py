@@ -294,7 +294,8 @@ class Verb(MSD):
 
         return stem + "ТИ"
 
-    def get_lemma(self) -> str:
+    @property
+    def lemma(self) -> str:
         lemma = "None"
 
         if hasattr(self, "role") and self.role == "св":
@@ -383,7 +384,7 @@ class Verb(MSD):
         return lemma
 
     @property
-    def value(self):
+    def pickled(self):
         return [
             self.pos,
             self.gen if hasattr(self, "gen") and self.gen else self.pers,

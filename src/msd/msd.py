@@ -40,7 +40,8 @@ class MSD:
 
         return s_modif
 
-    def get_lemma(self) -> str:
+    @property
+    def lemma(self) -> str:
         lemma = self.reg.replace("(", "").replace(")", "")
 
         if lemma.endswith(letters.cons):
@@ -152,5 +153,5 @@ class MSD:
         return s
 
     @property
-    def value(self):
+    def pickled(self):
         return [self.pos]

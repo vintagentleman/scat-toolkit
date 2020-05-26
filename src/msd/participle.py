@@ -120,7 +120,8 @@ class Participle(Verb):
 
         return stem + "ТИ"
 
-    def get_lemma(self) -> str:
+    @property
+    def lemma(self) -> str:
         suff = None
 
         if self.d_old in ("тв", "м"):
@@ -191,5 +192,5 @@ class Participle(Verb):
         return lemma
 
     @property
-    def value(self):
+    def pickled(self):
         return [self.pos, self.d_old, self.tense, self.case, self.num, self.gen]

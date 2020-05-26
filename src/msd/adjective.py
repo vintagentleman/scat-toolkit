@@ -20,7 +20,8 @@ class Adjective(Noun):
             return "ИИ" if stem.endswith(letters.cons_palat) else "ЫИ"
         return "И" if stem.endswith(letters.vows) else "ИИ"
 
-    def get_lemma(self) -> str:
+    @property
+    def lemma(self) -> str:
         # Стемминг
         stem = self.get_stem(
             self.reg,

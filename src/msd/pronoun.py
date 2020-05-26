@@ -16,7 +16,8 @@ class Pronoun(MSD):
         self.case = w.ana[2].split("/")[-1]
         self.num = w.ana[3].split("/")[-1] if self.pers != "возвр" else "ед"
 
-    def get_lemma(self):
+    @property
+    def lemma(self):
         lemma = "None"
 
         if self.pers == "возвр" and self.case in utils.infl.pron_refl:
@@ -37,5 +38,5 @@ class Pronoun(MSD):
         return lemma
 
     @property
-    def value(self):
+    def pickled(self):
         return [self.pos, "личн", self.pers, self.case, self.num]

@@ -57,7 +57,7 @@ class Converter:
                     if self.mode == "tsv":
                         out.write(row.src, word.pos, *word.ana, word.lemma)
                     elif self.mode == "pkl":
-                        out.write(word.reg, word.msd.value)
+                        out.write(word.reg, word.msd.pickled)
                     else:
                         out.write(row)
 

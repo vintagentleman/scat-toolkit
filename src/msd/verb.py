@@ -168,6 +168,10 @@ class Verb(MSD):
                 )
             elif self.stem_in_dict(stem, utils.verbs.cls_v_1_b):
                 stem += "Я"
+            else:
+                lemma = self.get_dict_lemma(stem, utils.verbs.cls_i_5, "ТИ")
+                if lemma is not None:
+                    return lemma
         else:
             # Сочетания с йотом
             if stem.endswith(letters.cons_hush) or stem.endswith(letters.cons_sonor):
@@ -285,7 +289,10 @@ class Verb(MSD):
         elif self.stem_in_dict(stem, utils.verbs.cls_x_i):
             stem += "И"
         # I/5 подкласс
-        elif not self.stem_in_dict(stem, utils.verbs.cls_i_5):
+        else:
+            lemma = self.get_dict_lemma(stem, utils.verbs.cls_i_5, "ТИ")
+            if lemma is not None:
+                return lemma
             stem += theme
 
         return stem + "ТИ"

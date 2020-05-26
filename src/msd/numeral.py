@@ -48,7 +48,8 @@ class Numeral(Adjective):
                 return "Е"
             return super().get_infl(stem)
 
-    def get_lemma(self) -> str:
+    @property
+    def lemma(self) -> str:
         if self.pos == "мест":
             # Проверка на исключительность
             if (

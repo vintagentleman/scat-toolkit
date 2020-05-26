@@ -52,7 +52,7 @@ class Word:
             self.msd = self.msd_cls(self)
 
         self.lemma = (
-            self.msd.get_lemma()
+            self.msd.lemma
             if hasattr(self, "pos") and self.pos and not self.pos.isnumeric()
             else "None"
         )

@@ -318,6 +318,8 @@ class Verb(MSD):
             # Простые времена
 
             if self.tense == "н/б":
+                if (self.pers, self.num) == ("1", "ед") and self.reg == "В+Д+":
+                    return "В+ДАТИ"
                 lemma = self._present(
                     self.get_stem(self.reg, (self.pers, self.num), utils.infl.present)
                 )

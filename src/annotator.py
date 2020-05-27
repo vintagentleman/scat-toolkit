@@ -33,9 +33,9 @@ class Annotator:
             pos = tagset[0]
             # У глаголов пропускаем для сопоставления колонки с наклонением и временем
             if pos == "гл":
-                subtagset = tagset[3:]
+                subtagset = tagset[3:5]
             # У причастий пропускаем только время
-            if pos == "прич":
+            elif pos == "прич":
                 subtagset = [tagset[1]] + tagset[3:]
             # У прочих только ЧР
             else:
@@ -45,7 +45,7 @@ class Annotator:
                 if subtagset in cluster:
                     # Восстанавливаем пропущенные колонки
                     if pos == "гл":
-                        tagsets += [tagset[:3] + list_ for list_ in cluster]
+                        tagsets += [tagset[:3] + list_ + tagset[5] for list_ in cluster]
                     elif pos == "прич":
                         tagsets += [
                             [pos, list_[0], tagset[2]] + list_[1:] for list_ in cluster

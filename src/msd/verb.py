@@ -13,7 +13,7 @@ class Verb(MSD):
         self.refl = self.pos.endswith("/в")
 
         if self.refl:
-            self.reg, self.pos = self.reg[:-2], self.pos[:-2]
+            self.reg = self.reg[:-2]
 
         if self.reg[-1] not in letters.vows:
             self.reg += "`"

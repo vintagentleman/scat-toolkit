@@ -14,7 +14,7 @@ class Participle(Verb):
         self.refl = self.pos.endswith("/в")
 
         if self.refl:
-            self.reg, self.pos = self.reg[:-2], self.pos[:-2]
+            self.reg = self.reg[:-2]
 
         if re.match("НЕ(?!(ДО|НАВИ))", self.reg):
             self.reg = self.reg[2:]

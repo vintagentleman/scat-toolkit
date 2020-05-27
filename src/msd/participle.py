@@ -46,18 +46,17 @@ class Participle(Verb):
             return self.cls_4(stem)
         if stem.endswith(("А", "+")):
             return self.cls_3(stem)
-        if suff in ("А", "Я"):
-            if stem.endswith(letters.cons_hush) or stem.endswith(letters.cons_sonor):
-                stem = self.modify_jotted_stem(stem)
 
-            if self.stem_in_dict(stem, utils.verbs.cls_x_e):
-                return stem + "+ТИ"
-            if self.stem_in_dict(stem, utils.verbs.cls_x_a):
-                return stem + ("А" if stem.endswith(letters.cons_hush) else "Я") + "ТИ"
-            if self.stem_in_dict(stem, utils.verbs.cls_x_i):
-                return stem + "ИТИ"
-            return self.cls_3(stem)
-        return "None"
+        if stem.endswith(letters.cons_hush) or stem.endswith(letters.cons_sonor):
+            stem = self.modify_jotted_stem(stem)
+        if self.stem_in_dict(stem, utils.verbs.cls_x_e):
+            return stem + "+ТИ"
+        if self.stem_in_dict(stem, utils.verbs.cls_x_a):
+            return stem + ("А" if stem.endswith(letters.cons_hush) else "Я") + "ТИ"
+        if self.stem_in_dict(stem, utils.verbs.cls_x_i):
+            return stem + "ИТИ"
+
+        return self.cls_3(stem) if suff in ("А", "Я") else "None"
 
     def _pas_pres(self, stem, suff) -> str:
         if suff == "ОМ":

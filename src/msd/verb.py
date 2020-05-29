@@ -127,6 +127,10 @@ class Verb(MSD):
         if lemma is not None:
             return lemma
 
+        lemma = self.get_dict_lemma(stem, utils.verbs.cls_i_5, "ТИ")
+        if lemma is not None:
+            return lemma
+
         # Чередование /u:/
         stem = self.modify_uu(stem)
 
@@ -143,7 +147,7 @@ class Verb(MSD):
 
         # Приставочные дериваты БЫТИ
         elif stem.endswith("БУД"):
-            stem = "БЫ"
+            stem = stem.replace("БУД", "БЫ")
 
         elif stem.endswith(letters.cons):
             stem = (

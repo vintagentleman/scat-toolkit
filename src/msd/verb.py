@@ -127,10 +127,6 @@ class Verb(MSD):
         if lemma is not None:
             return lemma
 
-        lemma = self.get_dict_lemma(stem, utils.verbs.cls_i_5, "ТИ")
-        if lemma is not None:
-            return lemma
-
         # Чередование /u:/
         stem = self.modify_uu(stem)
 
@@ -322,6 +318,7 @@ class Verb(MSD):
             # Простые времена
 
             if self.tense == "н/б":
+                # См. Срезневский, т. 1, с. 481
                 if (self.pers, self.num) == ("1", "ед") and self.reg == "В+Д+":
                     return "В+ДАТИ"
                 lemma = self._present(

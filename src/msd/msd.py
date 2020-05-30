@@ -108,19 +108,14 @@ class MSD:
         assert self.pos.startswith(("гл", "прич"))
 
         # Подкласс VII/1
-        lemma = self.get_dict_lemma(s, utils.verbs.cls_vii_1, "СТИ")
-        if lemma is not None:
-            return lemma
-
-        # Группа VI/2/а
-        lemma = self.get_dict_lemma(s, utils.verbs.cls_vi_2_a, "ТИ")
-        if lemma is not None:
-            return lemma
-
-        # Подкласс VI/1
-        lemma = self.get_dict_lemma(s, utils.verbs.cls_vi_1, "ЩИ")
-        if lemma is not None:
-            return lemma
+        for dict_, suff in [
+            (utils.verbs.cls_vii_1, "СТИ"),
+            (utils.verbs.cls_vi_2_a, "ТИ"),
+            (utils.verbs.cls_vi_1, "ЩИ"),
+        ]:
+            lemma = self.get_dict_lemma(s, dict_, suff)
+            if lemma is not None:
+                return lemma
 
         # Группа VI/2/б
         if re.search("[МПТ][ЕЬ]?Р$", s):

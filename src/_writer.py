@@ -6,7 +6,7 @@ import shelve
 from lxml import etree
 
 from src import __metadata__
-from models import Word
+from _models import Word
 
 
 class Writer(AbstractContextManager):

@@ -7,13 +7,13 @@ import pandas as pd
 import xlsxwriter
 
 from src import __root__
-from models import Row, Word
+from _models import Row, Word
 
 
 class Annotator:
     def __init__(self, db="db", filename="AKush.tsv"):
         self.db = shelve.open(str(Path.joinpath(__root__, "out", db)))
-        self.filename = Path.joinpath(__root__, "inp", "raw", filename)
+        self.filename = Path.joinpath(__root__, "inp", "tokenized", filename)
 
         self.clusters = json.load(
             Path.joinpath(__root__, "src", "utils", "clusters.json").open(

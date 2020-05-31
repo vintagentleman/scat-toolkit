@@ -33,6 +33,9 @@ class Row:
 
         self.word = word
 
+    def __str__(self):
+        return self.src
+
 
 class Word:
     def __init__(self, doc, idx, src, ana=None):

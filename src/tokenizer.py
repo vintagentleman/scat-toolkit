@@ -74,7 +74,7 @@ def generate_token(toks, nums):
 
 
 if __name__ == "__main__":
-    inp = Path.joinpath(__root__, "inp", "raw")
+    inp = Path.joinpath(__root__, "inp", "tokenizer")
     filenames = inp.glob("*.txt")
 
     for filename in filenames:

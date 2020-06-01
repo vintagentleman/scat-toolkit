@@ -15,7 +15,7 @@ from _writer import TSVWriter, PKLWriter, XMLWriter
 
 class Converter:
     def __init__(self, inp="*.tsv", mode="tsv"):
-        self.inp = Path.joinpath(__root__, "inp", "annotated").glob(inp)
+        self.inp = Path.joinpath(__root__, "inp", "converter").glob(inp)
         self.filter = json.load(
             Path.joinpath(__root__, "conf", "filter.json").open(encoding="utf-8")
         )

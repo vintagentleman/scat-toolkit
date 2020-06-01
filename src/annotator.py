@@ -11,9 +11,9 @@ from _models import Row, Word
 
 
 class Annotator:
-    def __init__(self, db="db", filename="AKush.tsv"):
+    def __init__(self, db="db", filename="*.tsv"):
         self.db = shelve.open(str(Path.joinpath(__root__, "out", db)))
-        self.filename = Path.joinpath(__root__, "inp", "tokenized", filename)
+        self.filename = Path.joinpath(__root__, "inp", "annotator", filename)
 
         self.clusters = json.load(
             Path.joinpath(__root__, "src", "utils", "clusters.json").open(

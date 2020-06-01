@@ -1,6 +1,8 @@
 import re
 from pathlib import Path
 
+from fire import Fire
+
 from src import __root__
 from _models import Row
 from utils import replace_chars
@@ -73,9 +75,8 @@ def generate_token(toks, nums):
             yield str(t) + "\t" * 6
 
 
-if __name__ == "__main__":
-    inp = Path.joinpath(__root__, "inp", "tokenizer")
-    filenames = inp.glob("*.txt")
+def run(inp="*.txt"):
+    filenames = Path.joinpath(__root__, "inp", "tokenizer").glob(inp)
 
     for filename in filenames:
         with open(filename, mode="r", encoding="IBM866") as raw, Path.joinpath(
@@ -85,3 +86,7 @@ if __name__ == "__main__":
                 parsed = parse_line(line)
                 for token in generate_token(*parsed):
                     tokenized.write(token + "\n")
+
+
+if __name__ == "__main__":
+    Fire(run)

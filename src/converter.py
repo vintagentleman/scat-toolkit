@@ -52,6 +52,12 @@ class Converter:
             ) as out:
                 for idx, row in df.iterrows():
                     row = Row(row.map(str.strip).to_list())
+
+                    if row.word.startswith("</") or row.word.endswith("\">"):
+                        out.stream.feed(row.word)
+                        df.drop(idx, inplace=True)
+                        continue
+
                     word = Word(filename.stem, idx, row.word, row.ana)
 
                     if self.mode == "tsv":

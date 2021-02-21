@@ -1,6 +1,6 @@
 black==19.10b0
 fire==0.2.1
-lxml==4.5.0
+lxml==4.6.2
 pandas==1.0.1
 pre-commit==2.0.1
 pylint==2.4.4

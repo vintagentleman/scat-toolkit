@@ -7,6 +7,7 @@ from lxml import etree
 
 from src import __metadata__
 from _models import Word
+from xml_modif import PostProc
 
 
 class Writer(AbstractContextManager):
@@ -130,3 +131,10 @@ class XMLWriter(Writer):
         etree.ElementTree(root).write(
             str(self.path), encoding="utf-8", xml_declaration=True, pretty_print=True
         )
+
+        with open(str(self.path), encoding="utf-8") as inpt, open(
+            str(self.path) + "_", mode="w", encoding="utf-8"
+        ) as otpt:
+            otpt.write(
+                PostProc(inpt).run().toprettyxml(indent="  ", encoding="utf-8").decode()
+            )

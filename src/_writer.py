@@ -151,7 +151,12 @@ class ProielXMLWriter(Writer):
 
         # Root element setup
         self.root = etree.Element("proiel")
-        self.root.set("export-time", datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat())
+        self.root.set(
+            "export-time",
+            datetime.datetime.utcnow()
+            .replace(tzinfo=datetime.timezone.utc)
+            .isoformat(),
+        )
         self.root.set("schema-version", "2.0")
 
         # TODO Annotation

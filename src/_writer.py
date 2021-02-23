@@ -6,7 +6,7 @@ import shelve
 
 from lxml import etree
 
-from src import __metadata__
+from src import __metadata__, __root__
 from _models import Word
 from xml_modif import PostProc
 
@@ -159,7 +159,14 @@ class ProielXMLWriter(Writer):
         )
         self.root.set("schema-version", "2.0")
 
-        # TODO Annotation
+        self.root.append(
+            etree.XML(
+                Path.joinpath(__root__, "conf", "annotation.xml")
+                .open(encoding="utf-8")
+                .read(),
+                etree.XMLParser(remove_blank_text=True),
+            )
+        )
 
         # Source metadata setup
         meta = __metadata__[self.text_id]

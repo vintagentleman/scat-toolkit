@@ -173,6 +173,11 @@ class Word:
                     self.src[self.src.index("<") + 1 : self.src.index(">")],
                 )
             )
+        return self._replace_ascii(
+            re.sub(
+                r"(Z\s+-?\d+ ?|[*~\[\]%&\\])", "", self.src
+            )
+        )
 
     @property
     def msd_cls(self):

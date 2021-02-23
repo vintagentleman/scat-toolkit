@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from contextlib import AbstractContextManager
+import datetime
 from pathlib import Path
 import shelve
 
@@ -138,3 +139,76 @@ class XMLWriter(Writer):
             otpt.write(
                 PostProc(inpt).run().toprettyxml(indent="  ", encoding="utf-8").decode()
             )
+
+
+class ProielXMLWriter(Writer):
+    def __init__(self, path):
+        super().__init__(path)
+        self.stream = Path.open(path, mode="w", encoding="utf-8")
+        self.text_id = path.stem.replace(".proiel", "")  # Filename w/o ".proiel" suffix
+        self.sentence_id = 1  # Sentence ID counter
+        self.token_id = 1  # Token ID counter
+
+        # Root element setup
+        self.root = etree.Element("proiel")
+        self.root.set("export-time", datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat())
+        self.root.set("schema-version", "2.0")
+
+        # TODO Annotation
+
+        # Source metadata setup
+        meta = __metadata__[self.text_id]
+
+        source = etree.SubElement(self.root, "source")
+        source.set("id", self.text_id)
+        source.set("language", "chu")
+        etree.SubElement(source, "title").text = meta["title"]
+        etree.SubElement(source, "citation-part").text = meta["title"]
+
+        self.div = etree.SubElement(source, "div")
+        etree.SubElement(self.div, "title").text = self.text_id
+        self.sentence = self._new_sentence()
+
+    def _new_sentence(self):
+        sentence = etree.SubElement(self.div, "sentence")
+        sentence.set("id", str(self.sentence_id))
+        sentence.set("status", "unannotated")
+        self.sentence_id += 1
+        return sentence
+
+    def write(self, *args):
+        row = args[0]
+
+        if not row.word:
+            print(f"No word in {self.text_id}, row {row}")
+            return
+
+        word = Word(self.text_id, self.token_id, row.word, row.ana)
+        token = etree.SubElement(self.sentence, "token")
+        token.set("id", str(word.idx))
+        token.set("form", word.corr)
+
+        # Morphology
+        if hasattr(word, "pos") and not word.pos.isnumeric():
+            # TODO Implement conversion format
+            # token.set("part-of-speech", word.pos)
+            # if word.ana[0]:
+            #     token.set("morphology", NotImplemented)
+            if hasattr(self, "lemma"):
+                token.set("lemma", str(word.lemma).lower())
+
+        # Punctuation
+        if row.pcl is not None:
+            token.set("presentation-before", row.pcl)
+        token.set("presentation-after", " " if row.pcr is None else f"{row.pcr} ")
+
+        # Increment token counter
+        self.token_id += 1
+
+        if row.pcr is not None and row.pcr in (":", ";"):
+            self.sentence = self._new_sentence()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        etree.ElementTree(self.root).write(
+            str(self.path), encoding="utf-8", xml_declaration=True, pretty_print=True
+        )

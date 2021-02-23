@@ -30,7 +30,9 @@ class Converter:
         elif self.mode == "proiel.xml":
             self.writer = ProielXMLWriter
         else:
-            raise ValueError("--mode should be set to any of: 'tsv', 'pkl', 'xml', or 'proiel.xml'")
+            raise ValueError(
+                "--mode should be set to any of: 'tsv', 'pkl', 'xml', or 'proiel.xml'"
+            )
 
     def run(self):
         for filename in self.inp:

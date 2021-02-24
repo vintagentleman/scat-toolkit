@@ -7,7 +7,7 @@ import shelve
 from lxml import etree
 
 from src import __metadata__, __root__
-from _models import Word
+from _models import Word, ProielWord
 from xml_modif import PostProc
 
 
@@ -195,18 +195,16 @@ class ProielXMLWriter(Writer):
             print(f"No word in {self.text_id}, row {row}")
             return
 
-        word = Word(self.text_id, self.token_id, row.word, row.ana)
+        word = ProielWord(self.text_id, self.token_id, row.word, row.ana)
         token = etree.SubElement(self.sentence, "token")
         token.set("id", str(word.idx))
         token.set("form", word.corr)
 
         # Morphology
         if hasattr(word, "pos") and not word.pos.isnumeric():
-            # TODO Implement conversion format
-            # token.set("part-of-speech", word.pos)
-            # if word.ana[0]:
-            #     token.set("morphology", NotImplemented)
-            if hasattr(self, "lemma"):
+            token.set("part-of-speech", word.part_of_speech)
+            token.set("morphology", word.morphology)
+            if hasattr(word, "lemma"):
                 token.set("lemma", str(word.lemma).lower())
 
         # Punctuation

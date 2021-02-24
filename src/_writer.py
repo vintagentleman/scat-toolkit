@@ -208,7 +208,7 @@ class ProielXMLWriter(Writer):
                 token.set("lemma", str(word.lemma).lower())
 
         # Punctuation
-        if row.pcl is not None:
+        if row.pcl:
             token.set("presentation-before", row.pcl)
         token.set("presentation-after", " " if row.pcr is None else f"{row.pcr} ")
 

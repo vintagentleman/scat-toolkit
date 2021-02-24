@@ -104,7 +104,7 @@ class Word:
             if self.pos.isnumeric():
                 return self.pos
             if self.pos == "числ/п" and "#" in reg:
-                return reg.replace("(", "").replace(")", "")
+                return reg.replace("(", "").replace(")", "").replace(" ", "")
 
         prop, corr = reg.startswith("*"), reg.startswith("~")
         if prop or corr:

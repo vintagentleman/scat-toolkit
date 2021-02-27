@@ -84,11 +84,11 @@ def generate_token(toks, nums):
             yield str(t) + "\t" * 6
 
 
-def run(inp="*.txt"):
+def run(inp="*.txt", enc="IBM866"):
     filenames = Path.joinpath(__root__, "inp", "tokenizer").glob(inp)
 
     for filename in filenames:
-        with open(filename, mode="r", encoding="utf-8") as raw, Path.joinpath(
+        with open(filename, mode="r", encoding=enc) as raw, Path.joinpath(
             __root__, "out", filename.stem + ".tsv"
         ).open(mode="w", encoding="utf-8") as tokenized:
             for line in raw.readlines():

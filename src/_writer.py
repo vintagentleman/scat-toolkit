@@ -215,7 +215,7 @@ class ProielXMLWriter(Writer):
         # Increment token counter
         self.token_id += 1
 
-        if row.pcr is not None and row.pcr in (":", ";"):
+        if row.pcr is not None and row.pcr in (".", ":", ";"):
             self.sentence = self._new_sentence()
 
     def __exit__(self, exc_type, exc_val, exc_tb):

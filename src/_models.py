@@ -268,6 +268,9 @@ class ProielWord(Word):
         if self.pos == "межд":
             return "I-"
 
+        if self.pos.isnumeric():
+            return "Ma"
+
         return "X-"
 
     @property

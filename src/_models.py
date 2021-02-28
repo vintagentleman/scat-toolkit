@@ -98,7 +98,7 @@ class Word:
         )  # Удаление ошибочных написаний
 
         # Удаление внутренних разрывов
-        reg = re.sub(r"(Z\s+-?\d+\s+|[.,:;%&[\]\\])", "", reg).strip().upper()
+        reg = re.sub(r"(Z\s+-?\d+\s+|[\[\]%&\\])", "", reg).strip().upper()
 
         # Для цифири нормализация на этом заканчивается
         if self.is_cardinal_number():
@@ -220,7 +220,7 @@ class Word:
         ):
             res = f"<num>{res}</num>"
 
-        if self.corr is not None:
+        if "<" in self.src:
             res += f'<note type="corr">{self.corr}</note>'
 
         return res

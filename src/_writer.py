@@ -201,11 +201,11 @@ class ProielXMLWriter(Writer):
         token.set("form", word.corr)
 
         # Morphology
-        if hasattr(word, "pos") and not word.pos.isnumeric():
+        if hasattr(word, "pos") and not word.is_cardinal_number():
             token.set("part-of-speech", word.part_of_speech)
             token.set("morphology", word.morphology)
-            if hasattr(word, "lemma"):
-                token.set("lemma", str(word.lemma).lower())
+        if hasattr(word, "lemma"):
+            token.set("lemma", str(word.lemma).lower())
 
         # Punctuation
         if row.pcl:

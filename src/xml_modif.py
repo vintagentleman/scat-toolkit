@@ -55,7 +55,9 @@ class PostProc:
             # Суммирование числовых значений
             total = sum(
                 [
-                    int(node.getAttribute("reg"))
+                    int(
+                        node.getAttribute("reg").split("-")[0]
+                    )  # Учет порядковых числительных
                     for node in num.getElementsByTagName("w")
                 ]
             )

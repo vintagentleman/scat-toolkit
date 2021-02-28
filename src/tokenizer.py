@@ -6,7 +6,7 @@ from fire import Fire
 from src import __root__
 from _models import Row
 from utils import replace_chars
-from utils.letters import num_values
+from utils.number import Number
 
 
 def parse_line(line):
@@ -54,23 +54,9 @@ def generate_token(toks, nums):
 
     for t in toks:
         if t.word == "*":
-            num = nums[nums_done]
-
-            # Не быть титла не может
-            if "#" not in num:
-                num += "#"
-            titlo = num.index("#")
-
-            if num[0] == "$":
-                value = num_values[num[1]] * 1000 + sum(
-                    num_values.get(letter, 0) for letter in num[2:titlo]
-                )
-            else:
-                value = sum(num_values.get(letter, 0) for letter in num[0:titlo])
-
-            yield ("{}\t{}" + "\t" * 5).format(str(t).replace("*", num), value)
+            num = Number(nums[nums_done])
+            yield ("{}\t{}" + "\t" * 5).format(str(t).replace("*", num.text), num.value)
             nums_done += 1
-
         else:
             yield str(t) + "\t" * 6
 

@@ -5,6 +5,7 @@ from src import __metadata__
 from modif.modif import modif
 from msd import *
 from utils import letters, count_chars, replace_chars, replace_overline_chars
+from utils.number import Number
 
 
 class Row:
@@ -54,11 +55,11 @@ class Word:
                 self.pos = self.pos.split("/")[-1]
             self.msd = self.msd_cls(self)
 
-        self.lemma = (
-            self.msd.lemma
-            if hasattr(self, "pos") and self.pos and not self.pos.isnumeric()
-            else "None"
-        )
+    def is_cardinal_number(self):
+        return hasattr(self, "pos") and self.pos.isnumeric()
+
+    def is_ordinal_number(self):
+        return hasattr(self, "pos") and self.pos == "числ/п" and "#" in self.src
 
     @staticmethod
     def _replace_ascii(s):
@@ -100,11 +101,10 @@ class Word:
         reg = re.sub(r"(Z\s+-?\d+\s+|[.,:;%&[\]\\])", "", reg).strip().upper()
 
         # Для цифири нормализация на этом заканчивается
-        if hasattr(self, "pos"):
-            if self.pos.isnumeric():
-                return self.pos
-            if self.pos == "числ/п" and "#" in reg:
-                return reg.replace("(", "").replace(")", "").replace(" ", "")
+        if self.is_cardinal_number():
+            return self.pos
+        if self.is_ordinal_number():
+            return str(Number(reg.replace("(", "").replace(")", "").replace(" ", "")))
 
         prop, corr = reg.startswith("*"), reg.startswith("~")
         if prop or corr:
@@ -191,22 +191,33 @@ class Word:
             return Participle
         return MSD
 
+    @property
+    def lemma(self):
+        if not hasattr(self, "pos"):
+            return "None"
+        if self.is_cardinal_number():
+            return self.pos
+        return self.msd.lemma
+
     def __repr__(self):
         res = f'<w xml:id="{self.doc}.{self.idx}"'
 
-        if hasattr(self, "pos") and not self.pos.isnumeric():
+        if hasattr(self, "pos") and not self.is_cardinal_number():
             res += f' pos="{self.pos}"'
 
             if self.ana[0]:
                 res += f' msd="{";".join(elem for elem in self.ana if elem)}"'
-            if hasattr(self, "lemma"):
-                res += f' lemma="{str(self.lemma).lower()}"'
+
+        if hasattr(self, "lemma"):
+            res += f' lemma="{str(self.lemma).lower()}"'
 
         res += f' reg="{self.reg.lower()}" src="{escape(self.src)}">{self.orig}</w>'
 
         if "*" in self.src:
             res = f"<name>{res}</name>"
-        elif hasattr(self, "pos") and self.pos.isnumeric():
+        elif hasattr(self, "pos") and (
+            self.is_cardinal_number() or self.is_ordinal_number()
+        ):
             res = f"<num>{res}</num>"
 
         if self.corr is not None:

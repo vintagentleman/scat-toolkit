@@ -141,7 +141,6 @@ class XMLWriter(Writer):
 class ProielXMLWriter(Writer):
     def __init__(self, path):
         super().__init__(path)
-        self.stream = Path.open(path, mode="w", encoding="utf-8")
         self.text_id = path.stem.replace(".proiel", "")  # Filename w/o ".proiel" suffix
         self.sentence_id = 1  # Sentence ID counter
         self.token_id = 1  # Token ID counter

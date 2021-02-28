@@ -127,17 +127,14 @@ class XMLWriter(Writer):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.stream.feed("</ab></body></text></TEI>")
-
         root = self.stream.close()
-        etree.ElementTree(root).write(
-            str(self.path), encoding="utf-8", xml_declaration=True, pretty_print=True
-        )
 
-        with open(str(self.path), encoding="utf-8") as inpt, open(
-            str(self.path) + "_", mode="w", encoding="utf-8"
-        ) as otpt:
-            otpt.write(
-                PostProc(inpt).run().toprettyxml(indent="  ", encoding="utf-8").decode()
+        with open(str(self.path), mode="w", encoding="utf-8") as fo:
+            fo.write(
+                PostProc(etree.tostring(root, encoding="utf-8"))
+                .run()
+                .toprettyxml(indent="  ", encoding="utf-8")
+                .decode()
             )
 
 

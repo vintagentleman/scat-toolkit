@@ -197,7 +197,8 @@ class Word:
             return "None"
         if self.is_cardinal_number():
             return self.pos
-        return self.msd.lemma
+        # Replace yat only after all processing has finished
+        return self.msd.lemma.replace("+", "Ѣ")
 
     def __repr__(self):
         res = f'<w xml:id="{self.doc}.{self.idx}"'

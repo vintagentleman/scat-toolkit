@@ -197,7 +197,7 @@ class ProielXMLWriter(Writer):
         token.set("form", word.corr)
 
         # Morphology
-        if hasattr(word, "pos") and not word.is_cardinal_number():
+        if hasattr(word, "pos"):
             token.set("part-of-speech", word.part_of_speech)
             token.set("morphology", word.morphology)
         if hasattr(word, "lemma"):

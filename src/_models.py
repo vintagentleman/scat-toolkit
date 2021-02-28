@@ -296,7 +296,9 @@ class ProielWord(Word):
 
     @property
     def _number(self):
-        if not hasattr(self.msd, "num") or (hasattr(self.msd, "pers") and self.msd.pers == "возвр"):
+        if not hasattr(self.msd, "num") or (
+            hasattr(self.msd, "pers") and self.msd.pers == "возвр"
+        ):
             return "-"
         if self.msd.num == "ед":
             return "s"
@@ -363,7 +365,11 @@ class ProielWord(Word):
 
     @property
     def _gender(self):
-        if not hasattr(self.msd, "gen") or (self.pos.startswith("гл") and hasattr(self.msd, "mood") and self.msd.mood != "сосл"):
+        if not hasattr(self.msd, "gen") or (
+            self.pos.startswith("гл")
+            and hasattr(self.msd, "mood")
+            and self.msd.mood != "сосл"
+        ):
             return "-"
         if self.msd.gen == "м":
             return "m"
@@ -413,6 +419,7 @@ class ProielWord(Word):
             "i"
             if self.pos.startswith(
                 ("сущ", "мест", "прил", "числ", "гл", "прич", "инф", "суп")
-            ) and self.pos != "прил/н"
+            )
+            and self.pos != "прил/н"
             else "n"
         )

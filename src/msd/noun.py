@@ -268,7 +268,6 @@ class Noun(MSD):
         # Возвращение маркера одушевлённости
         if self.prop:
             stem = "*" + stem
-            stem = "*" + stem
 
         # Нахождение флексии
         return stem + self.get_infl(stem)

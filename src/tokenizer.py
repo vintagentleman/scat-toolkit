@@ -10,9 +10,14 @@ from utils.number import Number
 
 
 def parse_line(line):
-    line = replace_chars(line, "ABEKMHOPCTXЭaeopcyx", "АВЕКМНОРСТХ+аеорсух")
-    nums = line[line.rfind("/") + 1 :].split()
-    toks = line[: line.rfind("/")].split()
+    # line = replace_chars(line, "ABEKMHOPCTXЭaeopcyx", "АВЕКМНОРСТХ+аеорсух")
+    nums = line[line.rfind("/") + 1:].split()
+    toks = list(filter(bool, re.split(r'(</.+?>|<.+?">)|\s+', line[: line.rfind("/")])))
+
+    for i in range(len(toks)):
+        if not (toks[i].startswith("</") or toks[i].endswith("\">")):
+            toks[i] = replace_chars(toks[i], "ABEKMHOPCTXЭaeopcyx", "АВЕКМНОРСТХ+аеорсух")
+
     i = 0
 
     # Сборка токенов из множества кусков
@@ -28,7 +33,11 @@ def parse_line(line):
             del toks[i + 1 : i + 3]
 
         # Ошибочные написания
-        if len(toks) > i + 1 and toks[i + 1].startswith("<"):
+        if (len(toks) > i + 1
+                and toks[i + 1].startswith("<")
+                and not toks[i + 1].startswith("</")
+                and not toks[i + 1].endswith("\">")
+        ):
             corr = toks[i + 1]
             del toks[i + 1]
 
@@ -61,11 +70,11 @@ def generate_token(toks, nums):
             yield str(t) + "\t" * 6
 
 
-def run(inp="*.txt"):
+def run(inp="*.txt", enc="IBM866"):
     filenames = Path.joinpath(__root__, "inp", "tokenizer").glob(inp)
 
     for filename in filenames:
-        with open(filename, mode="r", encoding="IBM866") as raw, Path.joinpath(
+        with open(filename, mode="r", encoding=enc) as raw, Path.joinpath(
             __root__, "out", filename.stem + ".tsv"
         ).open(mode="w", encoding="utf-8") as tokenized:
             for line in raw.readlines():

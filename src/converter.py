@@ -57,7 +57,7 @@ class Converter:
                 for idx, row in df.iterrows():
                     row = Row(row.map(str.strip).to_list())
 
-                    if row.word.startswith("</") or row.word.endswith("\">"):
+                    if row.word.startswith("</") or row.word.endswith('">'):
                         out.stream.feed(row.word)
                         df.drop(idx, inplace=True)
                         continue

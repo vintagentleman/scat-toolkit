@@ -36,8 +36,17 @@ class Noun(MSD):
             self.reg += "`"
 
         # Типы склонения: старый для основы, новый для флексии
-        if "/" in w.ana[0] and w.ana[0] != "р/скл":
-            self.d_old, self.d_new = w.ana[0].split("/")
+        if "/" in w.ana[0]:
+            if w.ana[0].count("/") > 1:
+                self.d_old, self.d_new = (
+                    w.ana[0].rsplit("/", 1)
+                    if w.ana[0].startswith("р/скл")
+                    else w.ana[0].split("/", 1)
+                )
+            elif w.ana[0] == "р/скл":
+                self.d_old = self.d_new = w.ana[0]
+            else:
+                self.d_old, self.d_new = w.ana[0].split("/")
         else:
             self.d_old = self.d_new = w.ana[0]
 

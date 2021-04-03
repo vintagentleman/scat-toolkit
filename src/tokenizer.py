@@ -12,7 +12,7 @@ from utils.number import Number
 def parse_line(line):
     # line = replace_chars(line, "ABEKMHOPCTXЭaeopcyx", "АВЕКМНОРСТХ+аеорсух")
     nums = line[line.rfind("/") + 1:].split()
-    toks = list(filter(bool, re.split(r'(</.+?>|<.+?">)|\s+', line[: line.rfind("/")])))
+    toks = list(filter(bool, re.split(r'(</.+?>|<[a-z].+?">)|\s+', line[: line.rfind("/")])))
 
     for i in range(len(toks)):
         if not (toks[i].startswith("</") or toks[i].endswith("\">")):

@@ -12,8 +12,8 @@ class PostProc:
             elif x.nodeType == Node.ELEMENT_NODE:
                 cls.remove_blanks(x)
 
-    def __init__(self, fo):
-        self.xml = minidom.parse(fo)
+    def __init__(self, text):
+        self.xml = minidom.parseString(text)
         self.remove_blanks(self.xml)
         self.xml.normalize()
 
@@ -55,7 +55,9 @@ class PostProc:
             # Суммирование числовых значений
             total = sum(
                 [
-                    int(node.getAttribute("reg"))
+                    int(
+                        node.getAttribute("reg").split("-")[0]
+                    )  # Учет порядковых числительных
                     for node in num.getElementsByTagName("w")
                 ]
             )

@@ -1,12 +1,13 @@
 from abc import abstractmethod
 from contextlib import AbstractContextManager
+import datetime
 from pathlib import Path
 import shelve
 
 from lxml import etree
 
-from src import __metadata__
-from _models import Word
+from src import __metadata__, __root__
+from _models import Word, ProielWord
 from xml_modif import PostProc
 
 
@@ -126,15 +127,94 @@ class XMLWriter(Writer):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.stream.feed("</ab></body></text></TEI>")
-
         root = self.stream.close()
-        etree.ElementTree(root).write(
-            str(self.path), encoding="utf-8", xml_declaration=True, pretty_print=True
+
+        with open(str(self.path), mode="w", encoding="utf-8") as fo:
+            fo.write(
+                PostProc(etree.tostring(root, encoding="utf-8"))
+                .run()
+                .toprettyxml(indent="  ", encoding="utf-8")
+                .decode()
+            )
+
+
+class ProielXMLWriter(Writer):
+    def __init__(self, path):
+        super().__init__(path)
+        self.text_id = path.stem.replace(".proiel", "")  # Filename w/o ".proiel" suffix
+        self.sentence_id = 1  # Sentence ID counter
+        self.token_id = 1  # Token ID counter
+
+        # Root element setup
+        self.root = etree.Element("proiel")
+        self.root.set(
+            "export-time",
+            datetime.datetime.utcnow()
+            .replace(tzinfo=datetime.timezone.utc)
+            .isoformat(),
+        )
+        self.root.set("schema-version", "2.0")
+
+        self.root.append(
+            etree.XML(
+                Path.joinpath(__root__, "conf", "annotation.xml")
+                .open(encoding="utf-8")
+                .read(),
+                etree.XMLParser(remove_blank_text=True),
+            )
         )
 
-        with open(str(self.path), encoding="utf-8") as inpt, open(
-            str(self.path) + "_", mode="w", encoding="utf-8"
-        ) as otpt:
-            otpt.write(
-                PostProc(inpt).run().toprettyxml(indent="  ", encoding="utf-8").decode()
-            )
+        # Source metadata setup
+        meta = __metadata__[self.text_id]
+
+        source = etree.SubElement(self.root, "source")
+        source.set("id", self.text_id)
+        source.set("language", "chu")
+        etree.SubElement(source, "title").text = meta["title"]
+        etree.SubElement(source, "citation-part").text = meta["title"]
+
+        self.div = etree.SubElement(source, "div")
+        etree.SubElement(self.div, "title").text = self.text_id
+        self.sentence = self._new_sentence()
+
+    def _new_sentence(self):
+        sentence = etree.SubElement(self.div, "sentence")
+        sentence.set("id", str(self.sentence_id))
+        sentence.set("status", "unannotated")
+        self.sentence_id += 1
+        return sentence
+
+    def write(self, *args):
+        row = args[0]
+
+        if not row.word:
+            print(f"No word in {self.text_id}, row {row}")
+            return
+
+        word = ProielWord(self.text_id, self.token_id, row.word, row.ana)
+        token = etree.SubElement(self.sentence, "token")
+        token.set("id", str(word.idx))
+        token.set("form", word.corr)
+
+        # Morphology
+        if hasattr(word, "pos"):
+            token.set("part-of-speech", word.part_of_speech)
+            token.set("morphology", word.morphology)
+        if hasattr(word, "lemma"):
+            token.set("lemma", str(word.lemma).lower())
+
+        # Punctuation
+        if row.pcl:
+            token.set("presentation-before", row.pcl)
+        token.set("presentation-after", " " if row.pcr is None else f"{row.pcr} ")
+
+        # Increment token counter
+        self.token_id += 1
+
+        if row.pcr is not None and row.pcr in (".", ":", ";"):
+            self.sentence = self._new_sentence()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        etree.ElementTree(self.root).write(
+            str(self.path), encoding="utf-8", xml_declaration=True, pretty_print=True
+        )

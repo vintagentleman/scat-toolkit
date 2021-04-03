@@ -10,7 +10,7 @@ import pandas as pd
 
 from src import __root__
 from _models import Row, Word
-from _writer import TSVWriter, PKLWriter, XMLWriter
+from _writer import TSVWriter, PKLWriter, XMLWriter, ProielXMLWriter
 
 
 class Converter:
@@ -27,8 +27,12 @@ class Converter:
             self.writer = PKLWriter
         elif self.mode == "xml":
             self.writer = XMLWriter
+        elif self.mode == "proiel.xml":
+            self.writer = ProielXMLWriter
         else:
-            raise ValueError("--mode should be set to any of: 'tsv', 'pkl', or 'xml'")
+            raise ValueError(
+                "--mode should be set to any of: 'tsv', 'pkl', 'xml', or 'proiel.xml'"
+            )
 
     def run(self):
         for filename in self.inp:

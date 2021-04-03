@@ -51,6 +51,9 @@ class Adjective(Noun):
         if self.prop:
             stem = "*" + stem
 
+        if stem.endswith("#"):
+            stem = stem.rstrip("#") + "-"
+
         # Нахождение флексии
         if self.prop and self.d_old not in ("м", "тв"):
             return stem + super().get_infl(stem)

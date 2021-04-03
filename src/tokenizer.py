@@ -11,12 +11,16 @@ from utils.number import Number
 
 def parse_line(line):
     # line = replace_chars(line, "ABEKMHOPCTXЭaeopcyx", "АВЕКМНОРСТХ+аеорсух")
-    nums = line[line.rfind("/") + 1:].split()
-    toks = list(filter(bool, re.split(r'(</.+?>|<[a-z].+?">)|\s+', line[: line.rfind("/")])))
+    nums = line[line.rfind("/") + 1 :].split()
+    toks = list(
+        filter(bool, re.split(r'(</.+?>|<[a-z].+?">)|\s+', line[: line.rfind("/")]))
+    )
 
     for i in range(len(toks)):
-        if not (toks[i].startswith("</") or toks[i].endswith("\">")):
-            toks[i] = replace_chars(toks[i], "ABEKMHOPCTXЭaeopcyx", "АВЕКМНОРСТХ+аеорсух")
+        if not (toks[i].startswith("</") or toks[i].endswith('">')):
+            toks[i] = replace_chars(
+                toks[i], "ABEKMHOPCTXЭaeopcyx", "АВЕКМНОРСТХ+аеорсух"
+            )
 
     i = 0
 
@@ -33,10 +37,11 @@ def parse_line(line):
             del toks[i + 1 : i + 3]
 
         # Ошибочные написания
-        if (len(toks) > i + 1
-                and toks[i + 1].startswith("<")
-                and not toks[i + 1].startswith("</")
-                and not toks[i + 1].endswith("\">")
+        if (
+            len(toks) > i + 1
+            and toks[i + 1].startswith("<")
+            and not toks[i + 1].startswith("</")
+            and not toks[i + 1].endswith('">')
         ):
             corr = toks[i + 1]
             del toks[i + 1]

@@ -27,10 +27,8 @@ class PostProc:
             if (
                 next_node is not None
                 and next_node.tagName == "pc"
-                and next_node.getAttribute("force") != "strong"
             ):
                 next_node.tagName = "c"
-                next_node.removeAttribute("force")
                 node.appendChild(next_node)
                 pack_num(node)
             elif next_node is not None and next_node.tagName == "num":
@@ -44,10 +42,8 @@ class PostProc:
             prev_node = num.previousSibling
             if (
                 prev_node.tagName == "pc"
-                and prev_node.getAttribute("force") != "strong"
             ):
                 prev_node.tagName = "c"
-                prev_node.removeAttribute("force")
                 num.insertBefore(prev_node, num.firstChild)
             # Последовательная упаковка <pc> и <num> в постпозиции
             pack_num(num)

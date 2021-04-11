@@ -81,10 +81,9 @@ class XMLWriter(Writer):
             punct = row.pcl.replace("[", "")
             token = row.pcl.replace("[", '<add place="margin"><c>[</c>')
             if punct:
-                force = "strong" if punct in (":", ";") else "weak"
                 token = token.replace(
                     punct,
-                    f'<pc xml:id="{self.path.stem}.{self.idx}" force="{force}">{punct}</pc>',
+                    f'<pc xml:id="{self.path.stem}.{self.idx}">{punct}</pc>',
                 )
                 self.idx += 1
             res.append(token)
@@ -97,10 +96,9 @@ class XMLWriter(Writer):
             punct = row.pcr.replace("]", "")
             token = row.pcr.replace("]", "<c>]</c></add>")
             if punct:
-                force = "strong" if punct in (":", ";") else "weak"
                 token = token.replace(
                     punct,
-                    f'<pc xml:id="{self.path.stem}.{self.idx}" force="{force}">{punct}</pc>',
+                    f'<pc xml:id="{self.path.stem}.{self.idx}">{punct}</pc>',
                 )
                 self.idx += 1
             res.append(token)

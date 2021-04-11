@@ -216,6 +216,7 @@ class Verb(MSD):
             mo = re.search(r"{}$".format(regex), stem)
             if mo is not None:
                 return stem[: -len(mo.group())] + utils.verbs.isol[regex] + "ТИ"
+        return None
 
     @skip_none
     def _present(self, stem) -> str:

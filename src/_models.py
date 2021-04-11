@@ -45,7 +45,7 @@ class Word:
             src, "ABEKMHOPCTXЭaeopcyx", "АВЕКМНОРСТХ+аеорсух"
         )  # Latin to Cyr
 
-        if ana is not None:
+        if ana is not None and any(elem for elem in ana):
             self.pos, self.ana = (
                 replace_chars(ana[0], "aeopcyx", "аеорсух"),
                 ana[1:],
@@ -209,7 +209,7 @@ class Word:
             if self.ana[0]:
                 res += f' msd="{";".join(elem for elem in self.ana if elem)}"'
 
-        if hasattr(self, "lemma"):
+        if self.lemma != "None":
             res += f' lemma="{str(self.lemma).lower()}"'
 
         res += f' reg="{self.reg.lower()}" src="{escape(self.src)}">{self.orig}</w>'

@@ -62,14 +62,15 @@ class Converter:
                         df.drop(idx, inplace=True)
                         continue
 
-                    word = Word(filename.stem, idx, row.word, row.ana)
-
-                    if self.mode == "tsv":
-                        out.write(row.src, word.pos, *word.ana, word.lemma)
-                    elif self.mode == "pkl":
-                        out.write(word.reg, word.msd.pickled)
-                    else:
+                    if self.mode.endswith("xml"):
                         out.write(row)
+                    else:
+                        word = Word(filename.stem, idx, row.word, row.ana)
+
+                        if self.mode == "tsv":
+                            out.write(row.src, word.pos, *word.ana, word.lemma)
+                        else:
+                            out.write(word.reg, word.msd.pickled)
 
 
 if __name__ == "__main__":

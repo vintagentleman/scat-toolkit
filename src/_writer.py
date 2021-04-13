@@ -116,7 +116,7 @@ class XMLWriter(Writer):
                         "a" if self.meta["column"] else "",
                     )
 
-                self.meta["line"] += 1
+                self.meta["line"] = 1
                 res.append(
                     f'<pb n="{self.meta["page"] + self.meta["column"]}"/><lb n="1"/>'
                 )

@@ -68,7 +68,10 @@ class Converter:
                         word = Word(filename.stem, idx, row.word, row.ana)
 
                         if self.mode == "tsv":
-                            out.write(row.src, word.pos, *word.ana, word.lemma)
+                            if hasattr(word, "pos"):
+                                out.write(row.src, word.pos, *word.ana, word.lemma)
+                            else:
+                                out.write(row.src + "\t" * 7)
                         else:
                             out.write(word.reg, word.msd.pickled)
 

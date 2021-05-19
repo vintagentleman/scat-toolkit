@@ -211,7 +211,7 @@ class Verb(MSD):
         return stem + "ТИ"
 
     @staticmethod
-    def cls_5(stem) -> str:
+    def cls_5(stem):
         for regex in utils.verbs.isol:
             mo = re.search(r"{}$".format(regex), stem)
             if mo is not None:
@@ -223,8 +223,7 @@ class Verb(MSD):
         # 5 класс
         if self.cls == "5" or stem.endswith("БУД"):
             lemma = self.cls_5(stem)
-            if lemma is not None:
-                return lemma
+            return "None" if lemma is None else lemma
 
         # Удаление тематических гласных
         if self.mood == "изъяв" and (self.pers, self.num) not in (

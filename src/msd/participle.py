@@ -179,6 +179,10 @@ class Participle(Verb):
                         if self.voice == "акт"
                         else self._pas_pres(stem, suff)
                     )
+            else:
+                lemma = (
+                    self._act_past(stem) if self.voice == "акт" else self._pas_past(stem)
+                )
 
         else:
             lemma = (

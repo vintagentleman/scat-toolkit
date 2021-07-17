@@ -1,6 +1,6 @@
 import re
 
-from utils import letters
+from utils import characters
 from . import lib
 
 
@@ -109,7 +109,7 @@ def modif_stv(w):
     mo = re.search("С(ТВ|К)", w)
 
     if mo and mo.start() > 2:
-        if w[mo.start() - 1] in set(letters.cons_hush) - {"Ц"}:
+        if w[mo.start() - 1] in set(characters.hush_consonants) - {"Ц"}:
             w = w[: mo.start()] + "Е" + w[mo.start() :]
         elif w[mo.start() - 1] == "Л":
             w = w[: mo.start()] + "Ь" + w[mo.start() :]
@@ -123,7 +123,7 @@ def modif_mv(w):
     mo = re.search("([МВ])Ь", w)
 
     if mo and mo.end() < real_len(w):
-        if w[mo.end()] not in set(letters.vows) - {"Ъ", "Ь"}:
+        if w[mo.end()] not in set(characters.vowels) - {"Ъ", "Ь"}:
             w = re.sub("([МВ])Ь", "\\1", w)
 
     return w

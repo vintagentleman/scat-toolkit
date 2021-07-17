@@ -1,80 +1,74 @@
-"""
-Usage: python converter.py [--inp="DP.tsv"] [--mode="xml"] run
-"""
-
-import json
+import csv
 from pathlib import Path
+from typing import List, Union
 
-from fire import Fire
-import pandas as pd
+import click
 
+from models.row import Row
+from components.normalizer.normalizer import Normalizer
+
+# from components.lemmatizer.lemmatizer import Lemmatizer
+from components.writer import Writer
 from src import __root__
-from _models import Row, Word
-from _writer import TSVWriter, PKLWriter, XMLWriter, ProielXMLWriter
 
 
-class Converter:
-    def __init__(self, inp="*.tsv", mode="tsv"):
-        self.inp = Path.joinpath(__root__, "inp", "converter").glob(inp)
-        self.filter = json.load(
-            Path.joinpath(__root__, "conf", "filter.json").open(encoding="utf-8")
+def parse_tsv(filepath: Path) -> List[Union[str, Row]]:
+    with filepath.open(encoding="utf-8", newline="") as fileobject:
+        reader = csv.reader(fileobject, delimiter="\t")
+        return [
+            row[0] if row[0].startswith("<") else Row(filepath.stem, row)
+            for row in reader
+        ]
+
+
+@click.command()
+@click.option(
+    "--mode",
+    "-m",
+    type=click.Choice(["txt", "xml"]),  # "proiel.xml", "conll"
+    default="xml",
+    help="Conversion output format",
+)
+@click.option(
+    "--path",
+    "-p",
+    type=click.Path(),
+    default="annotation/morphological",
+    help="Path to content files, relative to `scat-content` submodule path",
+)
+@click.argument("glob", default="*.tsv")
+def main(mode: str, path: str, glob: str):
+    filepaths = list(Path.joinpath(__root__, "scat-content", path).glob(glob))
+
+    manuscripts = {
+        manuscript_id: rows
+        for manuscript_id, rows in zip(
+            [filepath.stem for filepath in filepaths],
+            [parse_tsv(filepath) for filepath in filepaths],
         )
-        self.mode = mode
+    }  # Example: {"DGlush": [Row(), '<head n="1">', ...], "CrlNvz": ...}
 
-        if self.mode == "tsv":
-            self.writer = TSVWriter
-        elif self.mode == "pkl":
-            self.writer = PKLWriter
-        elif self.mode == "xml":
-            self.writer = XMLWriter
-        elif self.mode == "proiel.xml":
-            self.writer = ProielXMLWriter
-        else:
-            raise ValueError(
-                "--mode should be set to any of: 'tsv', 'pkl', 'xml', or 'proiel.xml'"
-            )
+    Path.joinpath(__root__, "generated").mkdir(exist_ok=True)
+    Path.joinpath(__root__, "generated", mode).mkdir(exist_ok=True)
 
-    def run(self):
-        for filename in self.inp:
-            df = pd.read_csv(filename, sep="\t", header=None, na_filter=False)
+    for manuscript_id in manuscripts:
+        filepath = Path.joinpath(__root__, "generated", mode, f"{manuscript_id}.{mode}")
+        writer = Writer.factory(mode, filepath)
 
-            if self.filter:
-                df = df[
-                    eval(
-                        " & ".join(
-                            f"df[{idx}].isin({self.filter[idx]})" for idx in self.filter
-                        )
-                    )
-                ]
+        with writer:
+            for row in manuscripts[manuscript_id]:
+                if row.word is not None:
+                    row.word.norm = Normalizer.normalize(row.word)
 
-            with self.writer(
-                Path.joinpath(
-                    __root__,
-                    "out",
-                    "db" if self.mode == "pkl" else f"{filename.stem}.{self.mode}",
-                )
-            ) as out:
-                for idx, row in df.iterrows():
-                    row = Row(row.map(str.strip).to_list())
+                    # if lemma := Lemmatizer.factory(row.word).lemmatize(row.word) is None:
+                    #     click.echo(f"Lemmatization failed for row {row}")
+                    # row.word.lemma = lemma
 
-                    if row.word.startswith("</") or row.word.endswith('">'):
-                        out.stream.feed(row.word)
-                        df.drop(idx, inplace=True)
-                        continue
-
-                    if self.mode.endswith("xml"):
-                        out.write(row)
-                    else:
-                        word = Word(filename.stem, idx, row.word, row.ana)
-
-                        if self.mode == "tsv":
-                            if hasattr(word, "pos"):
-                                out.write(row.src, word.pos, *word.ana, word.lemma)
-                            else:
-                                out.write(row.src + "\t" * 7)
-                        else:
-                            out.write(word.reg, word.msd.pickled)
+                if isinstance(row, Row):
+                    writer.write(row)
+                elif mode == "xml":
+                    writer.stream.feed(row)
 
 
 if __name__ == "__main__":
-    Fire(Converter)
+    main()

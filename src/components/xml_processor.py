@@ -2,7 +2,7 @@ from xml.dom import minidom
 from xml.dom.minidom import Node
 
 
-class PostProc:
+class XMLProcessor:
     @classmethod
     def remove_blanks(cls, node):
         for x in node.childNodes:
@@ -24,10 +24,7 @@ class PostProc:
         def pack_num(node):
             next_node = node.nextSibling
 
-            if (
-                next_node is not None
-                and next_node.tagName == "pc"
-            ):
+            if next_node is not None and next_node.tagName == "pc":
                 next_node.tagName = "c"
                 node.appendChild(next_node)
                 pack_num(node)
@@ -40,9 +37,7 @@ class PostProc:
         for num in self.nums:
             # Упаковка <pc> в препозиции
             prev_node = num.previousSibling
-            if (
-                prev_node.tagName == "pc"
-            ):
+            if prev_node.tagName == "pc":
                 prev_node.tagName = "c"
                 num.insertBefore(prev_node, num.firstChild)
             # Последовательная упаковка <pc> и <num> в постпозиции
@@ -52,7 +47,7 @@ class PostProc:
             total = sum(
                 [
                     int(
-                        node.getAttribute("reg").split("-")[0]
+                        node.getAttribute("norm").split("-")[0]
                     )  # Учет порядковых числительных
                     for node in num.getElementsByTagName("w")
                 ]

@@ -33,9 +33,6 @@ class Normalizer:
                 Number(res.replace("(", "").replace(")", "").replace(" ", ""))
             )  # Spelled-out numerals
 
-        if word.is_proper():
-            res = res[1:]  # Remove * marker
-
         res = replace_chars(
             res,
             characters.latin_special_characters,

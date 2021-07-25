@@ -88,7 +88,32 @@ class NounTagset(Tagset):
         self.gender = grammemes[3].split("/")[-1] if grammemes[3] != "0" else "м"
 
         # Additional property for morphonological notes
-        self.note = grammemes[0]
+        self.note = grammemes[4]
+
+    def is_reduced(self) -> bool:
+        # fmt: off
+        return (
+            self.declension[1] in ("a", "ja")
+            and (self.case, self.number) == ("род", "мн")
+            or
+            self.declension[1] in ("o", "jo")
+            and self.gender == "м"
+            and (self.case, self.number) not in (("им", "ед"), ("вин", "ед"), ("род", "мн"))
+            or
+            self.declension[1] in ("o", "jo")
+            and self.gender == "ср"
+            and (self.case, self.number) == ("род", "мн")
+            or
+            self.declension[1] in ("i", "u")
+            and (self.case, self.number) not in (("им", "ед"), ("вин", "ед"))
+            or
+            self.declension[1].startswith("e")
+            and (self.case, self.number) not in (("им", "ед"), ("вин", "ед"), ("род", "мн"))
+            or
+            self.declension[1] == "uu"
+            and (self.case, self.number) not in (("им", "ед"), ("вин", "ед"), ("род", "мн"))
+        )
+        # fmt: on
 
     def __str__(self):
         return ";".join([self.declension[1], self.case, self.number, self.gender])

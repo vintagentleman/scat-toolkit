@@ -154,6 +154,22 @@ def modif_on_end(w, p):
     return w
 
 
+def modif_prep(w):
+    """Замена вариантов предлогов"""
+
+    if last := w[-1] in characters.consonants:
+        w += "Ь" if last in characters.hush_consonants else "Ъ"
+
+    if w in lib.prep_var:
+        w = w[:-1] + "Ъ"
+
+    for regex in lib.prep:
+        if re.match(regex, w):
+            w = re.sub(regex, lib.prep[regex], w)
+
+    return w
+
+
 def modif_errors(w):
     """Исправление ошибок"""
 
@@ -184,5 +200,8 @@ def modif(wort, pos):
 
     wort = modif_mv(wort)
     wort = modif_on_end(wort, pos)
+
+    if pos == "пред":
+        wort = modif_prep(wort)
 
     return modif_errors(wort)

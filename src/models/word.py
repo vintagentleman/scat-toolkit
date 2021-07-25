@@ -17,9 +17,7 @@ class Word:
         # Extract correction with break characters removed
         if "<" in source:
             self.error, self.source = (
-                self.source[
-                    1 : self.source.index("<") - 1
-                ],  # Text between ~ and <
+                self.source[1 : self.source.index("<") - 1],  # Text between ~ and <
                 self.source[
                     self.source.index("<") + 1 : self.source.index(">")
                 ],  # Text between < and >
@@ -33,6 +31,7 @@ class Word:
         # Check that tagset is not empty before assignment
         self.tagset = Tagset.factory(grammemes) if grammemes[0] else None
 
+        self.pos = self.tagset.pos  # Add POS alias for convenience
         self.norm: Optional[str] = None
         self.lemma: Optional[str] = None
 
@@ -63,9 +62,7 @@ class Word:
         return UnicodeConverter.convert("".join(elements))
 
     def __str__(self):
-        return re.sub(
-            Milestone.REGEX, "", self.source if self.error is None else self.error
-        )
+        return re.sub(Milestone.REGEX, "", self.source)
 
     @property
     def xml(self) -> str:
@@ -81,7 +78,7 @@ class Word:
         if self.norm is not None:
             attrs.append(f'norm="{self.norm}"')
         if self.lemma is not None:
-            attrs.append(f'lemma="{self.lemma}"')
+            attrs.append(f'lemma="{self.lemma.replace("+", "Ѣ").lower()}"')
 
         res = f"<w {' '.join(attrs)}>{self.orig}</w>"
 

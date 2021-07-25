@@ -10,7 +10,7 @@ def skip_none(fun):
     @functools.wraps(fun)
     def wrapped(*args, **kwargs):
         if args[1] is None:
-            return "None"
+            return None
         return fun(*args, **kwargs)
 
     return wrapped

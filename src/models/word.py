@@ -4,8 +4,8 @@ from typing import List, Optional
 from components.unicode_converter import UnicodeConverter
 from models.milestone import Milestone
 from models.tagset import Tagset
-from utils.characters import latin_homoglyphs, cyrillic_homoglyphs
 from utils import replace_chars
+from utils.characters import cyrillic_homoglyphs, latin_homoglyphs
 
 
 class Word:
@@ -45,6 +45,12 @@ class Word:
             and self.tagset.pos == "числ/п"
         )
 
+    def source_without_milestones(self) -> str:
+        return re.sub(Milestone.REGEX, "", self.source)
+
+    def source_to_unicode(self) -> str:
+        return UnicodeConverter.convert(self.source_without_milestones())
+
     @property
     def orig(self) -> str:
         orig = self.source if self.error is None else self.error
@@ -62,7 +68,11 @@ class Word:
         return UnicodeConverter.convert("".join(elements))
 
     def __str__(self):
-        return re.sub(Milestone.REGEX, "", self.source)
+        return UnicodeConverter.convert(
+            re.sub(
+                Milestone.REGEX, "", self.source if self.error is None else self.error
+            )
+        )
 
     def xml(self) -> str:
         attrs = []
@@ -87,6 +97,6 @@ class Word:
             res = f"<num>{res}</num>"
 
         if self.error is not None:
-            res += f'<note type="corr">{UnicodeConverter.convert(str(self))}</note>'
+            res += f'<note type="corr">{self.source_to_unicode()}</note>'
 
         return res

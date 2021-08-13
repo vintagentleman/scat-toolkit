@@ -7,7 +7,6 @@ from lxml import etree
 from models.row import Row
 from src import manuscripts
 from .xml_processor import XMLProcessor
-from .unicode_converter import UnicodeConverter
 
 
 class Writer(AbstractContextManager):
@@ -41,7 +40,7 @@ class TXTWriter(Writer):
         self.stream = Path.open(path, mode="w", encoding="utf-8")
 
     def write(self, row: Row):
-        self.stream.write(UnicodeConverter.convert(str(row)) + " ")
+        self.stream.write(str(row) + " ")
 
 
 class XMLWriter(Writer):

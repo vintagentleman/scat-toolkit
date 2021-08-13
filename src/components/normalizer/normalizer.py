@@ -1,8 +1,7 @@
-from utils import characters, replace_chars
-
 from components.normalizer.modif import modif
 from models.number import Number
 from models.word import Word
+from utils import characters, replace_chars
 
 
 class Normalizer:
@@ -24,7 +23,7 @@ class Normalizer:
 
     @classmethod
     def normalize(cls, word: Word) -> str:
-        res = str(word).strip().upper()
+        res = word.source_without_milestones().strip().upper()
 
         if word.is_cardinal_number():
             return word.tagset.pos  # Non-spelled out numerals

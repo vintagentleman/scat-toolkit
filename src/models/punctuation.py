@@ -8,7 +8,6 @@ class Punctuation:
     def __init__(self, source: str):
         self.source = source
 
-    @property
     def xml(self) -> str:
         # Split possible multiple punctuation and filter out empty elements
         elements: List[str] = [

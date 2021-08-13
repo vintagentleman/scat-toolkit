@@ -47,7 +47,6 @@ class TXTWriter(Writer):
 class XMLWriter(Writer):
     def __init__(self, path: Path):
         super().__init__(path)
-
         self.manuscript = manuscripts[path.stem]
 
         self.stream = etree.XMLParser(remove_blank_text=True)
@@ -69,7 +68,7 @@ class XMLWriter(Writer):
         )
 
     def write(self, row: Row):
-        self.stream.feed(f"\n{row.xml}")
+        self.stream.feed(f"\n{row.xml()}")
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.stream.feed(

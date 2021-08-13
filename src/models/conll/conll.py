@@ -8,7 +8,7 @@ from models.word import Word
 
 class UToken:
     def __init__(self):
-        self.id: int = 0  # TODO Implement token IDs
+        self.id: int = 0
         self.form: Optional[str] = None
         self.lemma: Optional[str] = None
         self.upos: Optional[str] = None
@@ -41,6 +41,7 @@ class UWord(UToken):
     def __init__(self, word: Word):
         super().__init__()
 
+        self.id = word.id
         self.form = str(word)
 
         if word.lemma is not None:
@@ -143,6 +144,7 @@ class UPunctuation(UToken):
     def __init__(self, punct: Punctuation):
         super().__init__()
 
+        self.id = punct.id
         self.form = punct.source
         self.lemma = punct.source
         self.upos = "PUNCT"

@@ -4,6 +4,7 @@ from typing import List, Optional
 from components.unicode_converter import UnicodeConverter
 from models.milestone import Milestone
 from models.tagset import Tagset
+from src import manuscripts
 from utils import replace_chars
 from utils.characters import cyrillic_homoglyphs, latin_homoglyphs
 
@@ -52,6 +53,10 @@ class Word:
         return UnicodeConverter.convert(self.source_without_milestones())
 
     @property
+    def id(self):
+        return manuscripts[self.manuscript_id].token_id
+
+    @property
     def orig(self) -> str:
         orig = self.source if self.error is None else self.error
 
@@ -89,7 +94,7 @@ class Word:
         if self.lemma is not None:
             attrs.append(f'lemma="{self.lemma.replace("+", "Ѣ").lower()}"')
 
-        res = f"<w {' '.join(attrs)}>{self.orig}</w>"
+        res = f'<w xml:id="{self.manuscript_id}.{self.id}" {" ".join(attrs)}>{self.orig}</w>'
 
         if self.is_proper:
             res = f"<name>{res}</name>"

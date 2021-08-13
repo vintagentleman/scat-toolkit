@@ -4,11 +4,10 @@ from typing import List, Optional, Union
 
 import click
 
-from models.row import Row
-from components.normalizer.normalizer import Normalizer
-
 from components.lemmatizer import lemmatizer_factory
+from components.normalizer.normalizer import Normalizer
 from components.writer import Writer
+from models.row import Row
 from src import __root__
 
 
@@ -32,7 +31,7 @@ class Text:
 @click.option(
     "--mode",
     "-m",
-    type=click.Choice(["txt", "xml"]),  # "proiel.xml", "conll"
+    type=click.Choice(["txt", "xml", "conll"]),  # "proiel.xml"
     default="xml",
     help="Conversion output format",
 )

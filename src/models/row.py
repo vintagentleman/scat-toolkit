@@ -1,6 +1,7 @@
 import re
 from typing import List
 
+from .conll.conll import UPunctuation, UWord
 from .milestone import Milestone
 from .punctuation import Punctuation
 from .word import Word
@@ -60,4 +61,14 @@ class Row:
                 self.milestone.xml() if self.milestone is not None else "",
             ]
         )
+        # fmt: on
+
+    def conll(self) -> str:
+        # fmt: off
+        return "\n".join([row for row in [
+                str(UPunctuation(self.head_punctuation)) if self.head_punctuation is not None else "",
+                str(UWord(self.word)) if self.word is not None else "",
+                str(UPunctuation(self.tail_punctuation)) if self.tail_punctuation is not None else "",
+            ] if row
+        ])
         # fmt: on

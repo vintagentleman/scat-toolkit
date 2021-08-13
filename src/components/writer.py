@@ -25,6 +25,8 @@ class Writer(AbstractContextManager):
             return TXTWriter(path)
         if mode == "xml":
             return XMLWriter(path)
+        if mode == "conll":
+            return CoNLLWriter(path)
         raise NotImplementedError()
 
     def __enter__(self):
@@ -88,3 +90,13 @@ class XMLWriter(Writer):
                 .toprettyxml(indent="  ", encoding="utf-8")
                 .decode()
             )
+
+
+class CoNLLWriter(Writer):
+    def __init__(self, path: Path):
+        super().__init__(path)
+        self.stream = Path.open(path, mode="w", encoding="utf-8")
+
+    def write(self, row: Row):
+        if text := row.conll():
+            self.stream.write(text + "\n")

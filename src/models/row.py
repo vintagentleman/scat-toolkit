@@ -21,7 +21,7 @@ class Row:
         if (match := re.search(rf"^{Punctuation.REGEX}+", source)) is not None:
             source, self.head_punctuation = (
                 source[match.end() :].strip(),
-                Punctuation(match.group()),
+                Punctuation(manuscript_id, match.group()),
             )
 
         # Extract break characters from end
@@ -35,7 +35,7 @@ class Row:
         if (match := re.search(rf"{Punctuation.REGEX}+$", source)) is not None:
             source, self.tail_punctuation = (
                 source[: match.start()].strip(),
-                Punctuation(match.group()),
+                Punctuation(manuscript_id, match.group()),
             )
 
         self.word = Word(manuscript_id, source, columns[1:]) if source else None

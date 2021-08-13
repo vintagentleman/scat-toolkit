@@ -52,7 +52,7 @@ class Word:
         # Split word by milestones. Final condition filters out empty strings.
         # Note that converting milestones to XML mutates global manuscript objects.
         elements: List[str] = [
-            Milestone.factory(self.manuscript_id, element).xml
+            Milestone.factory(self.manuscript_id, element).xml()
             if element.startswith(("&", "\\", "Z"))
             else element
             for element in re.split(Milestone.REGEX, orig)
@@ -64,7 +64,6 @@ class Word:
     def __str__(self):
         return re.sub(Milestone.REGEX, "", self.source)
 
-    @property
     def xml(self) -> str:
         attrs = []
 

@@ -10,7 +10,6 @@ class Milestone:
     def __init__(self, manuscript_id: str):
         self.manuscript: Manuscript = manuscripts[manuscript_id]
 
-    @property
     def xml(self) -> str:
         return "<milestone/>"
 
@@ -31,7 +30,6 @@ class Milestone:
 
 
 class LineBeginning(Milestone):
-    @property
     def xml(self) -> str:
         self.manuscript.line += 1
 
@@ -39,7 +37,6 @@ class LineBeginning(Milestone):
 
 
 class ColumnBeginning(Milestone):
-    @property
     def xml(self) -> str:
         self.manuscript.column = "b"
         self.manuscript.line = 1
@@ -52,7 +49,6 @@ class PageBeginning(Milestone):
         super().__init__(manuscript_id)
         self.number = number
 
-    @property
     def xml(self) -> str:
         self.manuscript.page = self.number
         self.manuscript.column = "a" if self.manuscript.column else ""

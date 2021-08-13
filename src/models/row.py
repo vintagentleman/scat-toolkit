@@ -40,25 +40,24 @@ class Row:
         self.word = Word(manuscript_id, source, columns[1:]) if source else None
 
     def __str__(self):
+        # fmt: off
         return "".join(
             [
-                self.head_punctuation.source
-                if self.head_punctuation is not None
-                else "",
+                self.head_punctuation.source if self.head_punctuation is not None else "",
                 str(self.word) if self.word is not None else "",
-                self.tail_punctuation.source
-                if self.tail_punctuation is not None
-                else "",
+                self.tail_punctuation.source if self.tail_punctuation is not None else "",
             ]
         )
+        # fmt: on
 
-    @property
-    def xml(self):
+    def xml(self) -> str:
+        # fmt: off
         return "".join(
             [
-                self.head_punctuation.xml if self.head_punctuation is not None else "",
-                self.word.xml if self.word is not None else "",
-                self.tail_punctuation.xml if self.tail_punctuation is not None else "",
-                self.milestone.xml if self.milestone is not None else "",
+                self.head_punctuation.xml() if self.head_punctuation is not None else "",
+                self.word.xml() if self.word is not None else "",
+                self.tail_punctuation.xml() if self.tail_punctuation is not None else "",
+                self.milestone.xml() if self.milestone is not None else "",
             ]
         )
+        # fmt: on

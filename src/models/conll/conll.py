@@ -28,7 +28,7 @@ class UToken:
                 self.lemma if self.lemma is not None else "_",
                 self.upos if self.upos is not None else "_",
                 self.xpos if self.xpos is not None else "_",
-                "|".join([f"{k}={v}" for k, v in self.feats.items()]),
+                "|".join([f"{k}={v}" for k, v in self.feats.items()]) if self.feats else "_",
                 self.head if self.head != 0 else "_",
                 self.deprel if self.deprel is not None else "_",
                 self.deps if self.deps is not None else "_",
@@ -60,7 +60,7 @@ class UWord(UToken):
             return "PROPN" if word.is_proper else "NOUN"
         if word.pos in ("прил", "прил/ср", "прил/н", "числ/п"):
             return "ADJ"
-        if word.pos == "числ":
+        if word.pos == "числ" or word.is_cardinal_number():
             return "NUM"
         if word.pos == "мест":
             return "PRON"  # TODO Distinguish DET

@@ -230,17 +230,7 @@ class VerbLemmatizer(Lemmatizer):
 
         # Глаголы-связки
         if tagset.role is not None and tagset.role == "св":
-            if tagset.mood == "сосл":
-                return "AUX-SBJ"
-            if tagset.tense == "перф":
-                return "AUX-PRF"
-            if tagset.tense == "плюскв":
-                return "AUX-PQP"
-
-            mo = re.match(r"буд ?([12])", tagset.tense)
-            if mo:
-                return "AUX-FT" + mo.group(1)
-            return None
+            return "БЫТИ"
 
         if tagset.mood == "изъяв":
             # Простые времена

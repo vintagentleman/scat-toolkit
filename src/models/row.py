@@ -1,5 +1,6 @@
 import re
-from typing import List
+from abc import ABC, abstractmethod
+from typing import List, Optional
 
 from .conll.conll import UPunctuation, UWord
 from .milestone import Milestone
@@ -7,38 +8,54 @@ from .punctuation import Punctuation
 from .word import Word
 
 
-class Row:
+class Row(ABC):
     def __init__(self, manuscript_id: str, columns: List[str]):
         assert len(columns) == 7
-        columns = [column.strip() for column in columns]
 
-        source = columns[0]
-        self.head_punctuation = None
-        self.milestone = None
-        self.tail_punctuation = None
+        self.source: str = columns[0]
+        self.word: Optional[Word] = None
+        self.head_punctuation: Optional[Punctuation] = None
+        self.milestone: Optional[Milestone] = None
+        self.tail_punctuation: Optional[Punctuation] = None
+
+    @abstractmethod
+    def xml(self) -> str:
+        pass
+
+    @abstractmethod
+    def conll(self) -> str:
+        pass
+
+
+class WordRow(Row):
+    def __init__(self, manuscript_id: str, columns: List[str]):
+        columns = [column.strip() for column in columns]
+        super().__init__(manuscript_id, columns)
 
         # Extract punctuation from beginning
-        if (match := re.search(rf"^{Punctuation.REGEX}+", source)) is not None:
-            source, self.head_punctuation = (
-                source[match.end() :].strip(),
+        if (match := re.search(rf"^{Punctuation.REGEX}+", self.source)) is not None:
+            self.source, self.head_punctuation = (
+                self.source[match.end() :].strip(),
                 Punctuation(manuscript_id, match.group()),
             )
 
         # Extract break characters from end
-        if (match := re.search(rf"{Milestone.REGEX}$", source)) is not None:
-            source, self.milestone = (
-                source[: match.start()].strip(),
+        if (match := re.search(rf"{Milestone.REGEX}$", self.source)) is not None:
+            self.source, self.milestone = (
+                self.source[: match.start()].strip(),
                 Milestone.factory(manuscript_id, match.group()),
             )
 
         # Extract punctuation from end
-        if (match := re.search(rf"{Punctuation.REGEX}+$", source)) is not None:
-            source, self.tail_punctuation = (
-                source[: match.start()].strip(),
+        if (match := re.search(rf"{Punctuation.REGEX}+$", self.source)) is not None:
+            self.source, self.tail_punctuation = (
+                self.source[: match.start()].strip(),
                 Punctuation(manuscript_id, match.group()),
             )
 
-        self.word = Word(manuscript_id, source, columns[1:]) if source else None
+        self.word = (
+            Word(manuscript_id, self.source, columns[1:]) if self.source else None
+        )
 
     def __str__(self):
         # fmt: off
@@ -72,3 +89,11 @@ class Row:
             ] if row
         ])
         # fmt: on
+
+
+class XMLRow(Row):
+    def xml(self) -> str:
+        return self.source
+
+    def conll(self) -> str:
+        raise NotImplementedError

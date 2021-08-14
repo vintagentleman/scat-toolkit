@@ -1,11 +1,13 @@
 from abc import abstractmethod
 from contextlib import AbstractContextManager
 from pathlib import Path
+from typing import List
 
 from lxml import etree
 
 from models.row import Row
 from src import manuscripts
+
 from .xml_processor import XMLProcessor
 
 
@@ -13,21 +15,16 @@ class Writer(AbstractContextManager):
     @abstractmethod
     def __init__(self, path: Path):
         self.path = path
+        self.manuscript = manuscripts[path.stem]
         self.stream = NotImplemented
 
     @abstractmethod
-    def write(self, row: Row):
+    def write_row(self, row: Row):
         pass
 
-    @staticmethod
-    def factory(mode: str, path: Path):
-        if mode == "txt":
-            return TXTWriter(path)
-        if mode == "xml":
-            return XMLWriter(path)
-        if mode == "conll":
-            return CoNLLWriter(path)
-        raise NotImplementedError()
+    @abstractmethod
+    def write_chunk(self, chunk: List[Row]):
+        pass
 
     def __enter__(self):
         return self
@@ -41,14 +38,17 @@ class TXTWriter(Writer):
         super().__init__(path)
         self.stream = Path.open(path, mode="w", encoding="utf-8")
 
-    def write(self, row: Row):
+    def write_row(self, row: Row):
         self.stream.write(str(row) + " ")
+
+    def write_chunk(self, chunk: List[Row]):
+        [self.write_row(row) for row in chunk]
+        self.stream.write("\n")
 
 
 class XMLWriter(Writer):
     def __init__(self, path: Path):
         super().__init__(path)
-        self.manuscript = manuscripts[path.stem]
 
         self.stream = etree.XMLParser(remove_blank_text=True)
         self.stream.feed(
@@ -68,8 +68,13 @@ class XMLWriter(Writer):
                             <lb n="{self.manuscript.line}"/>"""
         )
 
-    def write(self, row: Row):
+    def write_row(self, row: Row):
         self.stream.feed(f"\n{row.xml()}")
+
+    def write_chunk(self, chunk: List[Row]):
+        self.stream.feed(f'<s n="{self.manuscript.chunk_id}">')
+        [self.write_row(row) for row in chunk]
+        self.stream.feed("</s>")
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.stream.feed(
@@ -97,6 +102,26 @@ class CoNLLWriter(Writer):
         super().__init__(path)
         self.stream = Path.open(path, mode="w", encoding="utf-8")
 
-    def write(self, row: Row):
+    def write_row(self, row: Row):
         if text := row.conll():
             self.stream.write(text + "\n")
+
+    def write_chunk(self, chunk: List[Row]):
+        self.stream.write(f"# source = {self.manuscript.title}\n")
+        self.stream.write(f"# text = {' '.join([str(row) for row in chunk])}\n")
+        self.stream.write(f"# sent_id = {self.manuscript.chunk_id}\n")
+
+        [self.write_row(row) for row in chunk]
+
+        self.stream.write("\n")
+        self.manuscript.token_id = 0
+
+
+def writer_factory(mode: str, path: Path) -> Writer:
+    if mode == "txt":
+        return TXTWriter(path)
+    if mode == "xml":
+        return XMLWriter(path)
+    if mode == "conll":
+        return CoNLLWriter(path)
+    raise NotImplementedError

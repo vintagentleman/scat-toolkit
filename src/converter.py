@@ -1,13 +1,14 @@
 import csv
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List
 
 import click
 
+from components.chunker import Chunker
 from components.lemmatizer import lemmatizer_factory
 from components.normalizer.normalizer import Normalizer
-from components.writer import Writer
-from models.row import Row
+from components.writer import writer_factory
+from models.row import Row, WordRow, XMLRow
 from src import __root__
 
 
@@ -16,15 +17,34 @@ class Text:
         self.filepath = filepath
         self.manuscript_id = filepath.stem
 
-        self.rows: Optional[List[Union[str, Row]]] = None
+        self.rows: List[Row] = []
+        self.chunks: List[List[Row]] = []
 
     def parse_rows(self):
         with self.filepath.open(encoding="utf-8", newline="") as fileobject:
             reader = csv.reader(fileobject, delimiter="\t")
-            self.rows = [
-                row[0] if row[0].startswith("<") else Row(self.manuscript_id, row)
-                for row in reader
-            ]
+
+            for line in reader:
+                if line[0].startswith("<"):
+                    row = XMLRow(self.manuscript_id, line)
+                else:
+                    row = WordRow(self.manuscript_id, line)
+
+                    if row.word is not None:
+                        row.word.norm = Normalizer.normalize(row.word)
+
+                        if (
+                            lemma := lemmatizer_factory(row.word).lemmatize(row.word)
+                        ) is None:
+                            click.echo(
+                                f"[{self.manuscript_id}] Lemmatization failed for row {row} {row.word.tagset}"
+                            )
+                        row.word.lemma = lemma
+
+                self.rows.append(row)
+
+    def chunk_rows(self):
+        self.chunks = Chunker.chunk(self.rows)
 
 
 @click.command()
@@ -42,41 +62,30 @@ class Text:
     default="annotation/morphological",
     help="Path to content files, relative to `scat-content` submodule path",
 )
+@click.option("--chunks/--no-chunks", default=False)
 @click.argument("glob", default="*.tsv")
-def main(mode: str, path: str, glob: str):
+def main(mode: str, path: str, chunks: bool, glob: str):
     # Create text objects
     filepaths = list(Path.joinpath(__root__, "scat-content", path).glob(glob))
     texts = [Text(filepath) for filepath in filepaths]
-
-    # Do all text processing
-    [t.parse_rows() for t in texts]
 
     Path.joinpath(__root__, "generated").mkdir(exist_ok=True)
     Path.joinpath(__root__, "generated", mode).mkdir(exist_ok=True)
 
     for text in texts:
+        # Do all row parsing, normalization, and lemmatization
+        text.parse_rows()
+
         filepath = Path.joinpath(
             __root__, "generated", mode, f"{text.manuscript_id}.{mode}"
         )
-        writer = Writer.factory(mode, filepath)
 
-        with writer:
-            for row in text.rows:
-                if row.word is not None:
-                    row.word.norm = Normalizer.normalize(row.word)
-
-                    if (
-                        lemma := lemmatizer_factory(row.word).lemmatize(row.word)
-                    ) is None and not row.word.pos.startswith(("гл", "прич")):
-                        click.echo(
-                            f"[{text.manuscript_id}] Lemmatization failed for row {row} {row.word.tagset}"
-                        )
-                    row.word.lemma = lemma
-
-                if isinstance(row, Row):
-                    writer.write(row)
-                elif mode == "xml":
-                    writer.stream.feed(row)
+        with (writer := writer_factory(mode, filepath)):
+            if chunks:
+                text.chunk_rows()
+                [writer.write_chunk(chunk) for chunk in text.chunks]
+            else:
+                [writer.write_row(row) for row in text.rows]
 
 
 if __name__ == "__main__":

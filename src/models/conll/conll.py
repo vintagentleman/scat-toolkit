@@ -28,7 +28,11 @@ class UToken:
                 self.lemma if self.lemma is not None else "_",
                 self.upos if self.upos is not None else "_",
                 self.xpos if self.xpos is not None else "_",
-                "|".join([f"{k}={v}" for k, v in self.feats.items()]) if self.feats else "_",
+                (
+                    "|".join([f"{k}={v}" for k, v in self.feats.items()])
+                    if self.feats
+                    else "_"
+                ),
                 self.head if self.head != 0 else "_",
                 self.deprel if self.deprel is not None else "_",
                 self.deps if self.deps is not None else "_",

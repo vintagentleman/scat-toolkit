@@ -46,6 +46,17 @@ class TXTWriter(Writer):
         self.stream.write("\n")
 
 
+class TSVWriter(TXTWriter):
+    def __init__(self, path):
+        super().__init__(path)
+        self.stream = Path.open(path, mode="w", encoding="utf-8")
+
+    def write_row(self, row: Row):
+        self.stream.write(
+            f"{row.tsv()}\t{row.word.lemma if row.word is not None else ''}\n"
+        )
+
+
 class XMLWriter(Writer):
     def __init__(self, path: Path):
         super().__init__(path)
@@ -120,6 +131,8 @@ class CoNLLWriter(Writer):
 def writer_factory(mode: str, path: Path) -> Writer:
     if mode == "txt":
         return TXTWriter(path)
+    if mode == "tsv":
+        return TSVWriter(path)
     if mode == "xml":
         return XMLWriter(path)
     if mode == "conll":

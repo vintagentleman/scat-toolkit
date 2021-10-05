@@ -12,11 +12,15 @@ class Row(ABC):
     def __init__(self, manuscript_id: str, columns: List[str]):
         assert len(columns) == 7
 
-        self.source: str = columns[0]
+        self.columns: List[str] = columns
+        self.source: str = self.columns[0]
         self.word: Optional[Word] = None
         self.head_punctuation: Optional[Punctuation] = None
         self.milestone: Optional[Milestone] = None
         self.tail_punctuation: Optional[Punctuation] = None
+
+    def tsv(self) -> str:
+        return "\t".join(self.columns)
 
     @abstractmethod
     def xml(self) -> str:
@@ -54,7 +58,7 @@ class WordRow(Row):
             )
 
         self.word = (
-            Word(manuscript_id, self.source, columns[1:]) if self.source else None
+            Word(manuscript_id, self.source, self.columns[1:]) if self.source else None
         )
 
     def __str__(self):

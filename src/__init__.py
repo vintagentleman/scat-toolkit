@@ -2,6 +2,7 @@ from pathlib import Path
 
 import yaml
 
+# Do not remove this line: necessary for manuscript config construction
 from models.manuscript import Manuscript
 
 # Project root directory

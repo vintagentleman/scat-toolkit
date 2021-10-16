@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from components.unicode_converter import UnicodeConverter
 from models.milestone import Milestone
-from models.tagset import Tagset
+from models.tagset import tagset_factory, Tagset
 from src import manuscripts
 from utils import replace_chars
 from utils.characters import cyrillic_homoglyphs, latin_homoglyphs
@@ -30,7 +30,7 @@ class Word:
         )  # Remove property marker
 
         # Check that tagset is not empty before assignment
-        self.tagset = Tagset.factory(grammemes) if grammemes[0] else None
+        self.tagset = tagset_factory(grammemes) if grammemes[0] else None
 
         self.pos = self.tagset.pos  # Add POS alias for convenience
         self.norm: Optional[str] = None

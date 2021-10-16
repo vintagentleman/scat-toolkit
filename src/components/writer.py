@@ -1,3 +1,4 @@
+import shelve
 from abc import abstractmethod
 from contextlib import AbstractContextManager
 from pathlib import Path
@@ -8,6 +9,7 @@ from lxml import etree
 from models.row import Row
 from src import manuscripts
 
+from .pickler import Pickler
 from .xml_processor import XMLProcessor
 
 
@@ -22,9 +24,8 @@ class Writer(AbstractContextManager):
     def write_row(self, row: Row):
         pass
 
-    @abstractmethod
     def write_chunk(self, chunk: List[Row]):
-        pass
+        [self.write_row(row) for row in chunk]
 
     def __enter__(self):
         return self
@@ -42,7 +43,7 @@ class TXTWriter(Writer):
         self.stream.write(str(row) + " ")
 
     def write_chunk(self, chunk: List[Row]):
-        [self.write_row(row) for row in chunk]
+        super().write_chunk(chunk)
         self.stream.write("\n")
 
 
@@ -55,6 +56,21 @@ class TSVWriter(TXTWriter):
         self.stream.write(
             f"{row.tsv()}\t{row.word.lemma if row.word is not None else ''}\n"
         )
+
+
+class PKLWriter(Writer):
+    def __init__(self, path):
+        super().__init__(path)
+        self.stream = shelve.open(str(path), writeback=True)
+
+    def write_row(self, row: Row):
+        if row.word is None or row.word.tagset is None:
+            return
+
+        options = self.stream.setdefault(row.word.norm, [])
+
+        if (pickled := Pickler.pickle(row.word)) not in options:
+            options.append(pickled)
 
 
 class XMLWriter(Writer):
@@ -84,7 +100,7 @@ class XMLWriter(Writer):
 
     def write_chunk(self, chunk: List[Row]):
         self.stream.feed(f'<s n="{self.manuscript.chunk_id}">')
-        [self.write_row(row) for row in chunk]
+        super().write_chunk(chunk)
         self.stream.feed("</s>")
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
@@ -122,7 +138,7 @@ class CoNLLWriter(Writer):
         self.stream.write(f"# text = {' '.join([str(row) for row in chunk])}\n")
         self.stream.write(f"# sent_id = {self.manuscript.chunk_id}\n")
 
-        [self.write_row(row) for row in chunk]
+        super().write_chunk(chunk)
 
         self.stream.write("\n")
         self.manuscript.token_id = 0
@@ -133,6 +149,8 @@ def writer_factory(mode: str, path: Path) -> Writer:
         return TXTWriter(path)
     if mode == "tsv":
         return TSVWriter(path)
+    if mode == "pkl":
+        return PKLWriter(path)
     if mode == "xml":
         return XMLWriter(path)
     if mode == "conll":

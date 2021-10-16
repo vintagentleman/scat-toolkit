@@ -51,7 +51,7 @@ class Text:
 @click.option(
     "--mode",
     "-m",
-    type=click.Choice(["txt", "tsv", "xml", "conll"]),  # "proiel.xml"
+    type=click.Choice(["txt", "tsv", "pkl", "xml", "conll"]),  # "proiel.xml"
     default="xml",
     help="Conversion output format",
 )

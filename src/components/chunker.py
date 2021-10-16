@@ -1,4 +1,3 @@
-from itertools import groupby
 from typing import List
 
 from models.row import Row

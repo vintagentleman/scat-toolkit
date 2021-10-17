@@ -26,8 +26,6 @@ class Pickler:
 
             if ts.gender is not None:
                 return [ts.pos, "", "", ts.gender, ts.number, class_]
-            if word.lemma == "БЫТИ":
-                return [ts.pos, "", "", ts.person, ts.number, class_]
             if (
                 ts.tense is not None
                 and re.match(r"(н/б|буд ?1)", ts.tense)

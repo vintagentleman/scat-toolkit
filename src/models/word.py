@@ -2,7 +2,7 @@ import re
 from typing import List, Optional
 
 from components.unicode_converter import UnicodeConverter
-from models.milestone import Milestone
+from models.milestone import milestone_factory, Milestone
 from models.tagset import Tagset, tagset_factory
 from src import manuscripts
 from utils import replace_chars
@@ -65,7 +65,7 @@ class Word:
         # Split word by milestones. Final condition filters out empty strings.
         # Note that converting milestones to XML mutates global manuscript objects.
         elements: List[str] = [
-            Milestone.factory(self.manuscript_id, element).xml()
+            milestone_factory(self.manuscript_id, element).xml()
             if element.startswith(("&", "\\", "Z"))
             else element
             for element in re.split(Milestone.REGEX, orig)

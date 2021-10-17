@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 
 from .conll.conll import UPunctuation, UWord
-from .milestone import Milestone
+from .milestone import milestone_factory, Milestone
 from .punctuation import Punctuation
 from .word import Word
 
@@ -47,7 +47,7 @@ class WordRow(Row):
         if (match := re.search(rf"{Milestone.REGEX}$", self.source)) is not None:
             self.source, self.milestone = (
                 self.source[: match.start()].strip(),
-                Milestone.factory(manuscript_id, match.group()),
+                milestone_factory(manuscript_id, match.group()),
             )
 
         # Extract punctuation from end

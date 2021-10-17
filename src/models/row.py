@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 
 from .conll.conll import UPunctuation, UWord
-from .milestone import milestone_factory, Milestone
+from .milestone import Milestone, milestone_factory
 from .punctuation import Punctuation
 from .word import Word
 

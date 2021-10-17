@@ -17,7 +17,7 @@ class Writer(AbstractContextManager):
     @abstractmethod
     def __init__(self, path: Path):
         self.path = path
-        self.manuscript = manuscripts[path.stem]
+        self.manuscript = manuscripts.get(path.stem)
         self.stream = NotImplemented
 
     @abstractmethod
@@ -48,7 +48,7 @@ class TXTWriter(Writer):
 
 
 class TSVWriter(TXTWriter):
-    def __init__(self, path):
+    def __init__(self, path: Path):
         super().__init__(path)
         self.stream = Path.open(path, mode="w", encoding="utf-8")
 
@@ -59,7 +59,7 @@ class TSVWriter(TXTWriter):
 
 
 class PKLWriter(Writer):
-    def __init__(self, path):
+    def __init__(self, path: Path):
         super().__init__(path)
         self.stream = shelve.open(str(path), writeback=True)
 
@@ -67,10 +67,10 @@ class PKLWriter(Writer):
         if row.word is None or row.word.tagset is None:
             return
 
-        options = self.stream.setdefault(row.word.norm, [])
+        tagsets = self.stream.setdefault(row.word.norm, [])
 
-        if (pickled := Pickler.pickle(row.word)) not in options:
-            options.append(pickled)
+        if (pickled := Pickler.pickle(row.word)) not in tagsets:
+            tagsets.append(pickled)
 
 
 class XMLWriter(Writer):

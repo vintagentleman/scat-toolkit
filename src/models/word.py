@@ -32,7 +32,9 @@ class Word:
         # Check that tagset is not empty before assignment
         self.tagset = tagset_factory(grammemes) if grammemes[0] else None
 
-        self.pos = self.tagset.pos  # Add POS alias for convenience
+        self.pos = (
+            self.tagset.pos if self.tagset is not None else None
+        )  # Add POS alias for convenience
         self.norm: Optional[str] = None
         self.lemma: Optional[str] = None
 

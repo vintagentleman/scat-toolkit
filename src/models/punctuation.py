@@ -27,6 +27,8 @@ class Punctuation:
             elif element == "]":
                 elements[i] = "<c>]</c></add>"
             else:
-                elements[i] = f'<pc xml:id="{self.manuscript_id}.{self.id}">{element}</pc>'
+                elements[
+                    i
+                ] = f'<pc xml:id="{self.manuscript_id}.{self.id}">{element}</pc>'
 
         return "".join(elements)

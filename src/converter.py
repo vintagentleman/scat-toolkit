@@ -1,4 +1,5 @@
 import csv
+from datetime import date
 from pathlib import Path
 from typing import List
 
@@ -70,14 +71,18 @@ def main(mode: str, path: str, chunks: bool, glob: str):
     texts = [Text(filepath) for filepath in filepaths]
 
     Path.joinpath(__root__, "generated").mkdir(exist_ok=True)
-    Path.joinpath(__root__, "generated", mode).mkdir(exist_ok=True)
+    Path.joinpath(__root__, "generated", "converter").mkdir(exist_ok=True)
+    Path.joinpath(__root__, "generated", "converter", mode).mkdir(exist_ok=True)
 
     for text in texts:
         # Do all row parsing, normalization, and lemmatization
         text.parse_rows()
 
+        # Version shelves by date timestamps rather than manuscript IDs
+        # This will also merge the output for all input documents into a single shelf
+        filename = date.today().isoformat() if mode == "pkl" else text.manuscript_id
         filepath = Path.joinpath(
-            __root__, "generated", mode, f"{text.manuscript_id}.{mode}"
+            __root__, "generated", "converter", mode, f"{filename}.{mode}"
         )
 
         with (writer := writer_factory(mode, filepath)):

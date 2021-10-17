@@ -2,7 +2,7 @@ import re
 from typing import List, Optional
 
 from components.unicode_converter import UnicodeConverter
-from models.milestone import milestone_factory, Milestone
+from models.milestone import Milestone, milestone_factory
 from models.tagset import Tagset, tagset_factory
 from src import manuscripts
 from utils import replace_chars

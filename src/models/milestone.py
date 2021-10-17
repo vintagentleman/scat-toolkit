@@ -13,21 +13,6 @@ class Milestone:
     def xml(self) -> str:
         return "<milestone/>"
 
-    @staticmethod
-    def factory(manuscript_id: str, source: str):
-        if source == "@":
-            return Milestone(manuscript_id)
-        if source == "&":
-            return LineBeginning(manuscript_id)
-        if source == "\\":
-            return ColumnBeginning(manuscript_id)
-        if source.startswith("Z"):
-            return PageBeginning(
-                manuscript_id, int(re.search(r"-?\d+", source).group())
-            )
-
-        raise ValueError(f"Unknown milestone element: {source}")
-
 
 class LineBeginning(Milestone):
     def xml(self) -> str:
@@ -55,3 +40,18 @@ class PageBeginning(Milestone):
         self.manuscript.line = 1
 
         return f'<pb n="{self.manuscript.page}{self.manuscript.column}"/><lb n="{self.manuscript.line}"/>'
+
+
+def milestone_factory(manuscript_id: str, source: str):
+    if source == "@":
+        return Milestone(manuscript_id)
+    if source == "&":
+        return LineBeginning(manuscript_id)
+    if source == "\\":
+        return ColumnBeginning(manuscript_id)
+    if source.startswith("Z"):
+        return PageBeginning(
+            manuscript_id, int(re.search(r"-?\d+", source).group())
+        )
+
+    raise ValueError(f"Unknown milestone element: {source}")

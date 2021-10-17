@@ -52,7 +52,7 @@ class Text:
 @click.option(
     "--mode",
     "-m",
-    type=click.Choice(["txt", "tsv", "pkl", "xml", "conll"]),  # "proiel.xml"
+    type=click.Choice(["txt", "tsv", "pkl", "xml", "proiel.xml", "conll"]),
     default="xml",
     help="Conversion output format",
 )

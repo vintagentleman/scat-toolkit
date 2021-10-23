@@ -1,80 +1,97 @@
-"""
-Usage: python converter.py [--inp="DP.tsv"] [--mode="xml"] run
-"""
-
-import json
+import csv
+from datetime import date
 from pathlib import Path
+from typing import List
 
-from fire import Fire
-import pandas as pd
+import click
 
+from components.chunker import Chunker
+from components.lemmatizer import lemmatizer_factory
+from components.normalizer.normalizer import Normalizer
+from components.writer import writer_factory
+from models.row import Row, WordRow, XMLRow
 from src import __root__
-from _models import Row, Word
-from _writer import TSVWriter, PKLWriter, XMLWriter, ProielXMLWriter
 
 
-class Converter:
-    def __init__(self, inp="*.tsv", mode="tsv"):
-        self.inp = Path.joinpath(__root__, "inp", "converter").glob(inp)
-        self.filter = json.load(
-            Path.joinpath(__root__, "conf", "filter.json").open(encoding="utf-8")
+class Text:
+    def __init__(self, filepath: Path):
+        self.filepath = filepath
+        self.manuscript_id = filepath.stem
+
+        self.rows: List[Row] = []
+        self.chunks: List[List[Row]] = []
+
+    def parse_rows(self):
+        with self.filepath.open(encoding="utf-8", newline="") as fileobject:
+            reader = csv.reader(fileobject, delimiter="\t")
+
+            for line in reader:
+                if line[0].startswith("<"):
+                    row = XMLRow(self.manuscript_id, line)
+                else:
+                    row = WordRow(self.manuscript_id, line)
+
+                    if row.word is not None:
+                        row.word.norm = Normalizer.normalize(row.word)
+
+                        if (
+                            lemma := lemmatizer_factory(row.word).lemmatize(row.word)
+                        ) is None:
+                            click.echo(
+                                f"[{self.manuscript_id}] Lemmatization failed for row {row} {row.word.tagset}"
+                            )
+                        row.word.lemma = lemma
+
+                self.rows.append(row)
+
+    def chunk_rows(self):
+        self.chunks = Chunker.chunk(self.rows)
+
+
+@click.command()
+@click.option(
+    "--mode",
+    "-m",
+    type=click.Choice(["txt", "tsv", "pkl", "xml", "proiel.xml", "conll"]),
+    default="xml",
+    help="Conversion output format",
+)
+@click.option(
+    "--path",
+    "-p",
+    type=click.Path(),
+    default="annotation/morphological",
+    help="Path to content files, relative to `scat-content` submodule path",
+)
+@click.option("--chunks/--no-chunks", default=False)
+@click.argument("glob", default="*.tsv")
+def main(mode: str, path: str, chunks: bool, glob: str):
+    # Create text objects
+    filepaths = list(Path.joinpath(__root__, "scat-content", path).glob(glob))
+    texts = [Text(filepath) for filepath in filepaths]
+
+    Path.joinpath(__root__, "generated").mkdir(exist_ok=True)
+    Path.joinpath(__root__, "generated", "converter").mkdir(exist_ok=True)
+    Path.joinpath(__root__, "generated", "converter", mode).mkdir(exist_ok=True)
+
+    for text in texts:
+        # Do all row parsing, normalization, and lemmatization
+        text.parse_rows()
+
+        # Version shelves by date timestamps rather than manuscript IDs
+        # This will also merge the output for all input documents into a single shelf
+        filename = date.today().isoformat() if mode == "pkl" else text.manuscript_id
+        filepath = Path.joinpath(
+            __root__, "generated", "converter", mode, f"{filename}.{mode}"
         )
-        self.mode = mode
 
-        if self.mode == "tsv":
-            self.writer = TSVWriter
-        elif self.mode == "pkl":
-            self.writer = PKLWriter
-        elif self.mode == "xml":
-            self.writer = XMLWriter
-        elif self.mode == "proiel.xml":
-            self.writer = ProielXMLWriter
-        else:
-            raise ValueError(
-                "--mode should be set to any of: 'tsv', 'pkl', 'xml', or 'proiel.xml'"
-            )
-
-    def run(self):
-        for filename in self.inp:
-            df = pd.read_csv(filename, sep="\t", header=None, na_filter=False)
-
-            if self.filter:
-                df = df[
-                    eval(
-                        " & ".join(
-                            f"df[{idx}].isin({self.filter[idx]})" for idx in self.filter
-                        )
-                    )
-                ]
-
-            with self.writer(
-                Path.joinpath(
-                    __root__,
-                    "out",
-                    "db" if self.mode == "pkl" else f"{filename.stem}.{self.mode}",
-                )
-            ) as out:
-                for idx, row in df.iterrows():
-                    row = Row(row.map(str.strip).to_list())
-
-                    if row.word.startswith("</") or row.word.endswith('">'):
-                        out.stream.feed(row.word)
-                        df.drop(idx, inplace=True)
-                        continue
-
-                    if self.mode.endswith("xml"):
-                        out.write(row)
-                    else:
-                        word = Word(filename.stem, idx, row.word, row.ana)
-
-                        if self.mode == "tsv":
-                            if hasattr(word, "pos"):
-                                out.write(row.src, word.pos, *word.ana, word.lemma)
-                            else:
-                                out.write(row.src + "\t" * 7)
-                        else:
-                            out.write(word.reg, word.msd.pickled)
+        with (writer := writer_factory(mode, filepath)):
+            if chunks:
+                text.chunk_rows()
+                [writer.write_chunk(chunk) for chunk in text.chunks]
+            else:
+                [writer.write_row(row) for row in text.rows]
 
 
 if __name__ == "__main__":
-    Fire(Converter)
+    main()

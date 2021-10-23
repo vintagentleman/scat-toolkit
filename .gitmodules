@@ -1,0 +1,4 @@
+[submodule "scat-content"]
+	path = scat-content
+	url = git@github.com:vintagentleman/scat-content.git
+	branch = master

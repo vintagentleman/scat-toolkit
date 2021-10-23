@@ -2,27 +2,44 @@ import json
 import shelve
 from pathlib import Path
 
-from fire import Fire
-import pandas as pd
+import click
+import pandas as pd  # TODO Remove this dependency from project
 import xlsxwriter
 
+from components.normalizer.normalizer import Normalizer
+from models.row import WordRow
 from src import __root__
-from _models import Row, Word
 
 
 class Annotator:
-    def __init__(self, db="db", filename="*.tsv"):
-        self.db = shelve.open(str(Path.joinpath(__root__, "out", db)))
-        self.filename = Path.joinpath(__root__, "inp", "annotator", filename)
+    def __init__(self, text, pickle):
+        self.text = Path.joinpath(__root__, "generated", "tokenizer", text)
+
+        self.pickle = shelve.open(
+            str(Path.joinpath(__root__, "generated", "converter", "pkl", pickle))
+        )
 
         self.clusters = json.load(
-            Path.joinpath(__root__, "src", "utils", "clusters.json").open(
+            Path.joinpath(__root__, "resources", "tagset_clusters.json").open(
                 encoding="utf-8"
             )
         )
 
-    def get_msd(self, form):
-        tagsets = self.db[form]
+        self.workbook = xlsxwriter.Workbook(
+            str(
+                Path.joinpath(
+                    __root__, "generated", "annotator", f"{self.text.stem}.xlsx"
+                )
+            )
+        )
+
+        self.styles = {
+            "ambiguous": self.workbook.add_format({"bg_color": "yellow"}),
+            "correct": self.workbook.add_format({"bg_color": "lime"}),
+        }
+
+    def _transform_tagsets_using_clusters(self, norm):
+        tagsets = self.pickle[norm]
         copy = tagsets[:]
 
         for i, tagset in enumerate(copy):
@@ -45,7 +62,9 @@ class Annotator:
                 if subtagset in cluster:
                     # Восстанавливаем пропущенные колонки
                     if pos == "гл":
-                        tagsets += [tagset[:3] + list_ + tagset[5] for list_ in cluster]
+                        tagsets += [
+                            tagset[:3] + list_ + [tagset[5]] for list_ in cluster
+                        ]
                     elif pos == "прич":
                         tagsets += [
                             [pos, list_[0], tagset[2]] + list_[1:] for list_ in cluster
@@ -59,48 +78,56 @@ class Annotator:
         # Добавляем пустые колонки в конец
         return [tagset + [""] * (6 - len(tagset)) for tagset in tagsets]
 
-    def run(self, students=10, workload=250, offset=0):
-        df = pd.read_csv(self.filename, sep="\t", header=None, na_filter=False)
-        rows = df.iloc[offset:].itertuples(index=False, name=None)
-        book = xlsxwriter.Workbook(
-            str(Path.joinpath(__root__, "out", f"{self.filename.stem}.xlsx"))
-        )
-
-        # Форматирование
-        ambiguous = book.add_format({"bg_color": "yellow"})
-        correct = book.add_format({"bg_color": "lime"})
+    def run(self, students: int, workload: int, offset: int):
+        df = pd.read_csv(self.text, sep="\t", header=None, na_filter=False)
+        lines = df.iloc[offset:].itertuples(index=False, name=None)
 
         for student in range(students):
-            sheet = book.add_worksheet()
+            sheet = self.workbook.add_worksheet()
             sheet.set_column("A:A", 40)
             limit = workload
 
-            for i, row in enumerate(rows):
-                if all(len(cell) == 0 for cell in row[1:]):
-                    sheet.write(i, 0, row[0])
-                    line = Row(list(map(str.strip, row)))
-                    word = Word(self.filename.stem, i, line.word, line.ana)
-                    form = word.reg
+            for i, line in enumerate(lines):
+                if all(len(cell) == 0 for cell in line[1:]):
+                    sheet.write(i, 0, line[0])
 
-                    if form in self.db:
-                        msd = self.get_msd(form)
+                    if line[0].startswith("<"):  # Skip XML words
+                        continue
+
+                    row = WordRow(self.text.stem, list(map(str.strip, line)))
+
+                    if row.word is None:  # Skip non-word rows
+                        continue
+
+                    row.word.norm = Normalizer.normalize(row.word)
+
+                    # Skip words w/o norms or with those not in shelf
+                    if row.word.norm is not None and row.word.norm in self.pickle:
+                        tagsets = self._transform_tagsets_using_clusters(row.word.norm)
 
                         # Если разбор один, то помечаем его и не учитываем при подсчёте
-                        if len(msd) == 1:
+                        if len(tagsets) == 1:
                             sheet.write(
-                                i, 0, row[0], correct if msd[0][0] != "гл" else None
+                                i,
+                                0,
+                                line[0],
+                                self.styles["correct"]
+                                if tagsets[0][0] != "гл"
+                                else None,
                             )
-                            sheet.write_row(i, 1, msd[0])
+                            sheet.write_row(i, 1, tagsets[0])
                             limit += 1
                         # Если нет, то выделяем неоднозначные позиции
                         else:
-                            for j, col in enumerate(zip(*msd), start=1):
+                            for j, col in enumerate(zip(*tagsets), start=1):
                                 # Если конфликтов нет, то просто записываем
                                 if col.count(col[0]) == len(col):
                                     sheet.write(i, j, col[0])
                                 # Конфликты выделяем и отображаем все опции
                                 else:
-                                    sheet.write_blank(i, j, None, ambiguous)
+                                    sheet.write_blank(
+                                        i, j, None, self.styles["ambiguous"]
+                                    )
                                     sheet.data_validation(
                                         i,
                                         j,
@@ -114,14 +141,26 @@ class Annotator:
                                     )
                 # Если колонок больше одной, то это цифирь
                 else:
-                    sheet.write(i, 0, row[0], correct)
-                    sheet.write(i, 1, row[1])
+                    sheet.write(i, 0, line[0], self.styles["correct"])
+                    sheet.write(i, 1, line[1])
 
-                if i == limit:
+                if i + 1 == limit:
                     break
 
-        book.close()
+        self.workbook.close()
+
+
+@click.command()
+@click.argument("text", type=click.Path())  # Relative to generated/tokenizer
+@click.argument("pickle", type=click.Path())  # Relative to generated/converter/pkl
+@click.option("--students", default=10)
+@click.option("--workload", default=250)
+@click.option("--offset", default=0)
+def main(text: str, pickle: str, students: int, workload: int, offset: int):
+    Path.joinpath(__root__, "generated").mkdir(exist_ok=True)
+    Path.joinpath(__root__, "generated", "annotator").mkdir(exist_ok=True)
+    Annotator(text, pickle).run(students, workload, offset)
 
 
 if __name__ == "__main__":
-    Fire(Annotator)
+    main()

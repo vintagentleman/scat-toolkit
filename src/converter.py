@@ -34,6 +34,7 @@ class Text:
                     if row.word is not None:
                         row.word.norm = Normalizer.normalize(row.word)
 
+                    if row.word is not None and row.word.tagset is not None:
                         if (
                             lemma := lemmatizer_factory(row.word).lemmatize(row.word)
                         ) is None:

@@ -5,7 +5,7 @@ from src import manuscripts
 
 
 class Milestone:
-    REGEX = r"(@|&|\\|Z\s+-?\d+\s*)"
+    REGEX = r"(@|%|&|\\|Z\s+-?\d+\s*)"
 
     def __init__(self, manuscript_id: str):
         self.manuscript: Manuscript = manuscripts[manuscript_id]
@@ -43,7 +43,7 @@ class PageBeginning(Milestone):
 
 
 def milestone_factory(manuscript_id: str, source: str):
-    if source == "@":
+    if source in ("@", "%"):
         return Milestone(manuscript_id)
     if source == "&":
         return LineBeginning(manuscript_id)

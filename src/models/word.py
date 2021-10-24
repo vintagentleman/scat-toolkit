@@ -84,7 +84,7 @@ class Word:
     def xml(self) -> str:
         attrs = []
 
-        if not self.is_cardinal_number():
+        if not self.is_cardinal_number() and self.tagset is not None:
             attrs.append(f'pos="{self.tagset.pos}"')
             if (
                 type(self.tagset) != Tagset

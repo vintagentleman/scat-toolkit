@@ -5,7 +5,7 @@ from typing import List, Tuple
 import click
 
 from models.number import Number
-from models.row import Row, WordRow
+from models.row import Row, WordRow, XMLRow
 from src import __root__
 from utils import replace_chars
 from utils.characters import cyrillic_homoglyphs, latin_homoglyphs
@@ -59,8 +59,15 @@ def parse_line(manuscript_id: str, line: str) -> Tuple[List[Row], List[str]]:
 
         i += 1
 
-    # TODO Account for XML rows
-    return [WordRow(manuscript_id, [t] + [""] * 6) for t in toks], nums
+    return (
+        [
+            (XMLRow if t.startswith("<") and t.endswith(">") else WordRow)(
+                manuscript_id, [t] + [""] * 6
+            )
+            for t in toks
+        ],
+        nums,
+    )
 
 
 def generate_token(rows, nums):

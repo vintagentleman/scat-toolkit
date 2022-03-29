@@ -48,11 +48,8 @@ class Word:
             and self.tagset.pos == "числ/п"
         )
 
-    def source_without_milestones(self) -> str:
-        return re.sub(Milestone.REGEX, "", self.source)
-
     def source_to_unicode(self) -> str:
-        return UnicodeConverter.convert(self.source_without_milestones())
+        return UnicodeConverter.convert(re.sub(Milestone.REGEX, "", self.source))
 
     @property
     def id(self):

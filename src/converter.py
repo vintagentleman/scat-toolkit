@@ -34,6 +34,7 @@ class Text:
                     if row.word is not None:
                         row.word.norm = Normalizer.normalize(row.word)
 
+                    if row.word is not None and row.word.tagset is not None:
                         if (
                             lemma := lemmatizer_factory(row.word).lemmatize(row.word)
                         ) is None:
@@ -60,14 +61,14 @@ class Text:
     "--path",
     "-p",
     type=click.Path(),
-    default="annotation/morphological",
-    help="Path to content files, relative to `scat-content` submodule path",
+    default="scat-content/annotation/morphological",
+    help="Path to content files",
 )
 @click.option("--chunks/--no-chunks", default=False)
 @click.argument("glob", default="*.tsv")
 def main(mode: str, path: str, chunks: bool, glob: str):
     # Create text objects
-    filepaths = list(Path.joinpath(__root__, "scat-content", path).glob(glob))
+    filepaths = list(Path.joinpath(__root__, path).glob(glob))
     texts = [Text(filepath) for filepath in filepaths]
 
     Path.joinpath(__root__, "generated").mkdir(exist_ok=True)

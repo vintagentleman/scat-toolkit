@@ -49,7 +49,7 @@ class UWord(UToken):
         self.form = str(word)
 
         if word.lemma is not None:
-            self.lemma = word.lemma.replace("+", "Ѣ").lower()
+            self.lemma = word.lemma
 
         self.upos = self.__get_upos(word)
         self.xpos = word.pos

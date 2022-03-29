@@ -1,10 +1,26 @@
+import re
+
 from components.normalizer.modif import modif
+from models.milestone import Milestone
 from models.number import Number
 from models.word import Word
 from utils import characters, replace_chars
 
 
 class Normalizer:
+    @staticmethod
+    def _replace_yer_before_linebreak(source: str) -> str:
+        for cluster in ("Ъ&", "ЪZ", "Ь&", "ЬZ"):
+            if cluster in source and not (
+                source.endswith(cluster)  # Yer shouldn't be in word-final position
+                or source[1:].startswith(
+                    cluster
+                )  # Yer shouldn't be part of a prefix e.g. ВЪ-, СЪ-
+                or source[source.index(cluster) - 1] == "Л"  # Yer shouldn't follow -Л-
+            ):
+                return source.replace(cluster, "")
+        return source
+
     @staticmethod
     def _replace_izhitsa(source: str, idx: int) -> str:
         try:
@@ -23,7 +39,16 @@ class Normalizer:
 
     @classmethod
     def normalize(cls, word: Word) -> str:
-        res = word.source_without_milestones().strip().upper()
+        res = word.source.strip().upper()
+
+        # Remove yer before linebreak unless tagged otherwise
+        if word.tagset.note is not None and not (
+            "+ъ" in word.tagset.note or "+ь" in word.tagset.note
+        ):
+            res = cls._replace_yer_before_linebreak(res)
+
+        # Remove milestones
+        res = re.sub(Milestone.REGEX, "", res)
 
         if word.is_cardinal_number():
             return word.tagset.pos  # Non-spelled out numerals

@@ -71,6 +71,16 @@ class Word:
 
         return UnicodeConverter.convert("".join(elements))
 
+    def __setattr__(self, key, value):
+        # Custom lemma setter
+        if key == "lemma" and isinstance(value, str):
+            value = (
+                value.replace("+", "Ѣ").title()
+                if self.is_proper
+                else value.replace("+", "Ѣ").lower()
+            )
+        super(Word, self).__setattr__(key, value)
+
     def __str__(self):
         return UnicodeConverter.convert(
             re.sub(
@@ -91,7 +101,7 @@ class Word:
         if self.norm is not None:
             attrs.append(f'norm="{self.norm}"')
         if self.lemma is not None:
-            attrs.append(f'lemma="{self.lemma.replace("+", "Ѣ").lower()}"')
+            attrs.append(f'lemma="{self.lemma}"')
 
         res = f'<w xml:id="{self.manuscript_id}.{self.id}" {" ".join(attrs)}>{self.orig}</w>'
 

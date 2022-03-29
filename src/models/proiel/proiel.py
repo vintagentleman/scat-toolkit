@@ -8,11 +8,7 @@ class PToken:
     def __init__(self, row: Row):
         self._word = row.word  # Checked for None in writer module
         self.form = str(self._word)
-        self.lemma = (
-            self._word.lemma.replace("+", "Ѣ").lower()
-            if self._word.lemma is not None
-            else None
-        )
+        self.lemma = self._word.lemma
 
         self.presentation_before = (
             row.head_punctuation.source if row.head_punctuation is not None else None

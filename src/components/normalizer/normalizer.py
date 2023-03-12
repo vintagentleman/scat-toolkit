@@ -42,7 +42,7 @@ class Normalizer:
         res = word.source.strip().upper()
 
         # Remove yer before linebreak unless tagged otherwise
-        if word.tagset.note is not None and not (
+        if word.tagset is not None and word.tagset.note is not None and not (
             "+ъ" in word.tagset.note or "+ь" in word.tagset.note
         ):
             res = cls._replace_yer_before_linebreak(res)

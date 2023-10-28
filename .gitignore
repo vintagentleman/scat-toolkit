@@ -1,5 +1,7 @@
 /.idea
+/.vscode
 /generated
+/env
 
 *.log.*
 *.pyc

@@ -82,7 +82,7 @@ class Annotator:
     def run(self, students: int, workload: int, offset: int):
         with open(self.text, "r") as f:
             lines = f.readlines()[offset:]
-            lines = [tuple(line.split("\t")) for line in lines]
+            lines = (tuple(map(str.strip, line.split("\t"))) for line in lines)
 
         for student in range(students):
             sheet = self.workbook.add_worksheet()

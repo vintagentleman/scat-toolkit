@@ -89,8 +89,12 @@ class UnicodeConverter:
         return "҇" + text if match.group(1).islower() else text
 
     @classmethod
-    def convert(cls, text: str) -> str:
-        text = re.sub(r"\((.+?)\)", cls.__replace_overline_chars, text)
+    def convert(cls, text: str, overline: bool = True) -> str:
+        text = (
+            re.sub(r"\((.+?)\)", cls.__replace_overline_chars, text)
+            if overline
+            else text.replace("(", "").replace(")", "")
+        )
         text = replace_chars(text, cls.INLINE_ASCII, cls.INLINE_UNICODE)
 
         if "#" in text:

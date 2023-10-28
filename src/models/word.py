@@ -88,6 +88,16 @@ class Word:
             )
         )
 
+    def conll(self) -> str:
+        return UnicodeConverter.convert(
+            re.sub(
+                Milestone.REGEX,
+                "",
+                self.source if self.error is None else self.error,
+            ),
+            False,
+        )
+
     def xml(self) -> str:
         attrs = []
 

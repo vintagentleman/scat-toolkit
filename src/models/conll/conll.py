@@ -46,7 +46,7 @@ class UWord(UToken):
         super().__init__()
 
         self.id = word.id
-        self.form = str(word)
+        self.form = word.conll()
 
         if word.lemma is not None:
             self.lemma = word.lemma

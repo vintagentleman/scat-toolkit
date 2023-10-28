@@ -1,7 +1,7 @@
 import re
 from typing import List
 
-from src import manuscripts
+from data.manuscripts import manuscripts
 
 
 class Punctuation:

@@ -6,9 +6,11 @@ import click
 
 from models.number import Number
 from models.row import Row, WordRow, XMLRow
-from src import __root__
 from utils import replace_chars
 from utils.characters import cyrillic_homoglyphs, latin_homoglyphs
+
+
+__root__ = Path(__file__).resolve().parents[1]
 
 
 def parse_line(manuscript_id: str, line: str) -> Tuple[List[Row], List[str]]:

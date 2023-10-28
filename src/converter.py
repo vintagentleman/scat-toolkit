@@ -10,7 +10,9 @@ from components.lemmatizer import lemmatizer_factory
 from components.normalizer.normalizer import Normalizer
 from components.writer import writer_factory
 from models.row import Row, WordRow, XMLRow
-from src import __root__
+
+
+__root__ = Path(__file__).resolve().parents[1]
 
 
 class Text:

@@ -4,7 +4,7 @@ from typing import List, Optional
 from components.unicode_converter import UnicodeConverter
 from models.milestone import Milestone, milestone_factory
 from models.tagset import Tagset, tagset_factory
-from src import manuscripts
+from data.manuscripts import manuscripts
 from utils import replace_chars
 from utils.characters import cyrillic_homoglyphs, latin_homoglyphs
 

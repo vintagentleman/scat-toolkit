@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List
 
 from models.row import Row
-from src import manuscripts
+from data.manuscripts import manuscripts
 
 
 class Writer(AbstractContextManager):

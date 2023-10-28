@@ -8,7 +8,9 @@ import xlsxwriter
 
 from components.normalizer.normalizer import Normalizer
 from models.row import WordRow
-from src import __root__
+
+
+__root__ = Path(__file__).resolve().parents[1]
 
 
 class Annotator:

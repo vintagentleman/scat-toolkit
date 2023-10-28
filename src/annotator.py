@@ -3,7 +3,6 @@ import shelve
 from pathlib import Path
 
 import click
-import pandas as pd  # TODO Remove this dependency from project
 import xlsxwriter
 
 from components.normalizer.normalizer import Normalizer
@@ -81,8 +80,9 @@ class Annotator:
         return [tagset + [""] * (6 - len(tagset)) for tagset in tagsets]
 
     def run(self, students: int, workload: int, offset: int):
-        df = pd.read_csv(self.text, sep="\t", header=None, na_filter=False)
-        lines = df.iloc[offset:].itertuples(index=False, name=None)
+        with open(self.text, "r") as f:
+            lines = f.readlines()[offset:]
+            lines = [tuple(line.split("\t")) for line in lines]
 
         for student in range(students):
             sheet = self.workbook.add_worksheet()

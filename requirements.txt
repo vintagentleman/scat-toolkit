@@ -1,4 +1,4 @@
-black==19.10b0
+black==24.3.0
 click==8.0.1
 lxml==4.6.5
 pytest==6.2.5

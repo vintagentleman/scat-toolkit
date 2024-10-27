@@ -27,7 +27,7 @@ class Text:
         with self.filepath.open(encoding="utf-8", newline="") as fileobject:
             reader = csv.reader(fileobject, delimiter="\t")
 
-            for line in reader:
+            for i, line in enumerate(reader):
                 if line[0].startswith("<"):
                     row = XMLRow(self.manuscript_id, line)
                 else:
@@ -41,7 +41,7 @@ class Text:
                             lemma := lemmatizer_factory(row.word).lemmatize(row.word)
                         ) is None:
                             click.echo(
-                                f"[{self.manuscript_id}] Lemmatization failed for row {row} {row.word.tagset}"
+                                f"[{self.manuscript_id}] Lemmatization failed for row {i + 1}: {row} {row.word.pos};{row.word.tagset}"
                             )
                         row.word.lemma = lemma
 

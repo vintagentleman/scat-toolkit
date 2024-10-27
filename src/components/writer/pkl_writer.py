@@ -12,7 +12,7 @@ class PKLWriter(Writer):
         self.stream = shelve.open(str(path), writeback=True)
 
     def write_row(self, row: Row):
-        if row.word is None or row.word.tagset is None:
+        if row.word is None or row.word.tagset is None or row.word.lemma is None:
             return
 
         tagsets = self.stream.setdefault(row.word.norm, [])

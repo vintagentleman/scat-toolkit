@@ -47,7 +47,9 @@ class ParticipleLemmatizer(VerbLemmatizer):
 
             if stem is None and tagset.declension[0] == "ja":
                 stem = cls.get_stem(
-                    norm, ("jo", tagset.case, tagset.number, tagset.gender), infl.noun,
+                    norm,
+                    ("jo", tagset.case, tagset.number, tagset.gender),
+                    infl.noun,
                 )
         else:
             stem = norm[:-1]
@@ -143,7 +145,7 @@ class PassivePresentLemmatizer(ParticipleLemmatizer):
             return cls.cls_1(stem)
         if suffix == "ЕМ":
             return cls.cls_3(stem)
-        if suffix == "ИМ":
+        if suffix in ("ИМ", "ЫМ"):
             return cls.cls_4(stem)
         return None
 

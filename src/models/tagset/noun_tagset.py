@@ -34,6 +34,9 @@ class NounTagset(Tagset):
         # Save the factual case only
         self.case = grammemes[1].split("/")[-1]
 
+        if grammemes[1] == "вин/род":
+            self.animate = "одуш"
+
         # Additional property
         self.is_plurale_tantum = grammemes[2] == "pt"
         if self.is_plurale_tantum:
@@ -72,4 +75,7 @@ class NounTagset(Tagset):
         # fmt: on
 
     def __str__(self):
-        return ";".join([self.declension[1], self.case, self.number, self.gender])
+        if self.animate:
+            return ";".join([self.declension[1], self.case, self.number, self.gender, self.animate])
+        else:
+            return ";".join([self.declension[1], self.case, self.number, self.gender])

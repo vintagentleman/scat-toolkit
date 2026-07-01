@@ -15,7 +15,9 @@ The toolkit does three things, each as a small command-line program:
 ## Requirements
 
 - Python 3.12+
-- Dependencies pinned in [`requirements.txt`](requirements.txt): `click`, `lxml`, `pyyaml`, `xlsxwriter` (plus `black` and `pytest` for development).
+- [uv](https://docs.astral.sh/uv/) for dependency and environment management.
+
+Runtime dependencies (`click`, `lxml`, `pyyaml`, `xlsxwriter`) and development tools (`ruff`, `pytest`, `ty`, `pre-commit`) are declared in [`pyproject.toml`](pyproject.toml) and locked in `uv.lock`.
 
 ## Installation
 
@@ -23,10 +25,7 @@ The toolkit does three things, each as a small command-line program:
 git clone --recurse-submodules https://github.com/vintagentleman/scat-toolkit.git
 cd scat-toolkit
 
-python -m venv .venv
-source .venv/bin/activate
-
-pip install -r requirements.txt
+uv sync
 ```
 
 If you cloned without `--recurse-submodules`, pull the corpus content in afterwards:
@@ -35,7 +34,7 @@ If you cloned without `--recurse-submodules`, pull the corpus content in afterwa
 git submodule update --init
 ```
 
-The tools are run directly as scripts from the repository root (there is no install step); each computes its own paths, and all output is written under a `generated/` directory that is created on demand and is git-ignored.
+The tools are run from the repository root through `uv run` (see [Usage](#usage)); each computes its own paths, and all output is written under a `generated/` directory that is created on demand and is git-ignored.
 
 ## Corpus layout
 
@@ -47,7 +46,7 @@ Under the `scat-content/` submodule:
 
 ## Usage
 
-Run each tool from the repository root. Every tool accepts `--help`.
+Run each tool from the repository root through the project environment — prefix with `uv run` as shown, or activate `.venv` and drop the prefix. Every tool accepts `--help`.
 
 ### 1. `tokenizer.py` — raw text → token skeleton
 
@@ -55,10 +54,10 @@ Splits a raw manuscript into one token per line, reassembling multi-piece tokens
 
 ```sh
 # tokenise every raw manuscript
-python src/tokenizer.py
+uv run python src/tokenizer.py
 
 # tokenise one file
-python src/tokenizer.py "DmPrlc.txt"
+uv run python src/tokenizer.py "DmPrlc.txt"
 ```
 
 | Option | Default | Meaning |
@@ -75,10 +74,10 @@ The main pipeline. For each token it normalises the orthography, computes the le
 
 ```sh
 # convert all morphological annotations to TEI XML (the default)
-python src/converter.py
+uv run python src/converter.py
 
 # emit the tabular format instead
-python src/converter.py -m tsv
+uv run python src/converter.py -m tsv
 ```
 
 | Option | Default | Meaning |
@@ -104,13 +103,13 @@ Given a tokenised text and a precedent shelf (from `converter.py -m pkl`), produ
 
 ```sh
 # 1. build the precedent shelf from existing annotation
-python src/converter.py -m pkl        # -> generated/converter/pkl/<date>.pkl
+uv run python src/converter.py -m pkl        # -> generated/converter/pkl/<date>.pkl
 
 # 2. tokenise the new manuscript
-python src/tokenizer.py "NewText.txt"  # -> generated/tokenizer/NewText.tsv
+uv run python src/tokenizer.py "NewText.txt"  # -> generated/tokenizer/NewText.tsv
 
 # 3. generate the workbook
-python src/annotator.py NewText.tsv <date>.pkl
+uv run python src/annotator.py NewText.tsv <date>.pkl
 ```
 
 | Argument / option | Default | Meaning |
@@ -125,9 +124,17 @@ Output: `generated/annotator/<text>.xlsx`.
 
 ## Development
 
-Code style is enforced with [`black`](https://github.com/psf/black) via [`pre-commit`](.pre-commit-config.yaml):
+Install the git hooks once:
 
 ```sh
-pip install pre-commit
-pre-commit install
+uv run pre-commit install
+```
+
+Linting and formatting use [ruff](https://docs.astral.sh/ruff/); tests use [pytest](https://docs.pytest.org/):
+
+```sh
+uv run ruff check       # lint
+uv run ruff format      # format
+uv run pytest           # run the tests
+uv run ty check src     # type-check (advisory, not enforced in CI)
 ```

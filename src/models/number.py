@@ -52,10 +52,11 @@ class Number:
         )
 
         if self.number.startswith("$"):
-            self.value = self.NUMBER_MAP[
-                self.number[1]
-            ] * 1000 + sum(  # The first number is a thousand digit
-                self.NUMBER_MAP.get(letter, 0) for letter in self.number[2:]
+            self.value = (
+                self.NUMBER_MAP[self.number[1]] * 1000
+                + sum(  # The first number is a thousand digit
+                    self.NUMBER_MAP.get(letter, 0) for letter in self.number[2:]
+                )
             )
         else:
             self.value = sum(self.NUMBER_MAP.get(letter, 0) for letter in self.number)

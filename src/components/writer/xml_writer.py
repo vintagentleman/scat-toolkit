@@ -3,8 +3,9 @@ from typing import List
 
 from lxml import etree
 
-from models.row import Row
 from components.xml_processor import XMLProcessor
+from models.row import Row
+
 from .writer import Writer
 
 

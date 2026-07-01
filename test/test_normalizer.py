@@ -2,9 +2,8 @@ from functools import partial
 
 import pytest
 
-from src.models.word import Word
-from src.components.normalizer.normalizer import Normalizer
-
+from components.normalizer.normalizer import Normalizer
+from models.word import Word
 
 Word = partial(Word, "DGlush")
 

@@ -1,7 +1,7 @@
+from lxml import etree
+
 from models.row import Row
 from models.tagset.pronoun_tagset import PronounTagset
-
-from lxml import etree
 
 
 class PToken:

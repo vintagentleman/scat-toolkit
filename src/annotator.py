@@ -8,7 +8,6 @@ import xlsxwriter
 from components.normalizer.normalizer import Normalizer
 from models.row import WordRow
 
-
 __root__ = Path(__file__).resolve().parents[1]
 
 

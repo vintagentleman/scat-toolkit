@@ -1,14 +1,14 @@
 from models.tagset import PronounTagset
 from models.word import Word
 
+from .adjective_lemmatizer import AdjectiveLemmatizer
 from .lemmatizer import Lemmatizer
 from .noun_lemmatizer import NounLemmatizer
-from .adjective_lemmatizer import AdjectiveLemmatizer
 from .numeral_lemmatizer import NumeralLemmatizer
-from .pronoun_lemmatizer import PronounLemmatizer
-from .verb_lemmatizer import VerbLemmatizer
 from .participle_lemmatizer import ParticipleLemmatizer
+from .pronoun_lemmatizer import PronounLemmatizer
 from .supine_lemmatizer import SupineLemmatizer
+from .verb_lemmatizer import VerbLemmatizer
 
 
 def lemmatizer_factory(word: Word):
@@ -21,7 +21,7 @@ def lemmatizer_factory(word: Word):
     if word.pos == "мест":
         return (
             PronounLemmatizer
-            if type(word.tagset) == PronounTagset
+            if type(word.tagset) is PronounTagset
             else NumeralLemmatizer
         )
     if word.pos in ("гл", "гл/в"):

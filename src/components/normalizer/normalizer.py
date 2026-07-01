@@ -11,12 +11,16 @@ class Normalizer:
     @staticmethod
     def _replace_yer_before_linebreak(source: str) -> str:
         for cluster in ("Ъ&", "ЪZ", "Ь&", "ЬZ"):
-            if cluster in source and not (
-                source.endswith(cluster)  # Yer shouldn't be in word-final position
-                or source[1:].startswith(
-                    cluster
-                )  # Yer shouldn't be part of a prefix e.g. ВЪ-, СЪ-
-                or source[source.index(cluster) - 1] == "Л"  # Yer shouldn't follow -Л-
+            if (
+                cluster in source
+                and not (
+                    source.endswith(cluster)  # Yer shouldn't be in word-final position
+                    or source[1:].startswith(
+                        cluster
+                    )  # Yer shouldn't be part of a prefix e.g. ВЪ-, СЪ-
+                    or source[source.index(cluster) - 1]
+                    == "Л"  # Yer shouldn't follow -Л-
+                )
             ):
                 return source.replace(cluster, "")
         return source
@@ -42,8 +46,10 @@ class Normalizer:
         res = word.source.strip().upper()
 
         # Remove yer before linebreak unless tagged otherwise
-        if word.tagset is not None and word.tagset.note is not None and not (
-            "+ъ" in word.tagset.note or "+ь" in word.tagset.note
+        if (
+            word.tagset is not None
+            and word.tagset.note is not None
+            and not ("+ъ" in word.tagset.note or "+ь" in word.tagset.note)
         ):
             res = cls._replace_yer_before_linebreak(res)
 

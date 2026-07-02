@@ -23,7 +23,7 @@ def test_tsv_writer_appends_lemma(tmp_path):
 
     fields = out.read_text(encoding="utf-8").splitlines()[0].split("\t")
     assert fields[:7] == columns
-    assert fields[7] == "месяць"  # lemma appended, lowercased by the Word setter
+    assert fields[7] == "месяць"  # lower-cased by the Word lemma setter
 
 
 def test_xml_writer_emits_tei_word(tmp_path):
@@ -31,7 +31,7 @@ def test_xml_writer_emits_tei_word(tmp_path):
     with writer_factory("xml", out) as writer:
         writer.write_chunk([build_row(["М(с)ЦА", "сущ", "jo", "род", "ед", "м", ""])])
 
-    word = etree.parse(str(out)).find(".//t:w", TEI_NS)  # also asserts well-formed XML
+    word = etree.parse(str(out)).find(".//t:w", TEI_NS)
     assert word.get("pos") == "сущ"
     assert word.get("msd") == "jo;род;ед;м"
     assert word.get("norm") == "МЕСЯЦА"

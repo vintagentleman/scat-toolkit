@@ -12,7 +12,6 @@ pytestmark = pytest.mark.skipif(
 
 
 def test_convert_real_sample_normalises_and_lemmatises(tmp_path):
-    # A small real slice run through the full parse -> normalise -> lemmatise pipeline.
     slice_ = tmp_path / "DmPrlc.tsv"
     lines = SAMPLE.read_text(encoding="utf-8").splitlines()[:15]
     slice_.write_text("\n".join(lines) + "\n", encoding="utf-8")

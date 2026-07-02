@@ -3,6 +3,7 @@ import re
 from components.normalizer.modif import modif
 from models.milestone import Milestone
 from models.number import Number
+from models.tagset.noun_tagset import NounTagset
 from models.word import Word
 from utils import characters, replace_chars
 
@@ -46,10 +47,8 @@ class Normalizer:
         res = word.source.strip().upper()
 
         # Remove yer before linebreak unless tagged otherwise
-        if (
-            word.tagset is not None
-            and word.tagset.note is not None
-            and not ("+ъ" in word.tagset.note or "+ь" in word.tagset.note)
+        if isinstance(word.tagset, NounTagset) and not (
+            "+ъ" in word.tagset.note or "+ь" in word.tagset.note
         ):
             res = cls._replace_yer_before_linebreak(res)
 

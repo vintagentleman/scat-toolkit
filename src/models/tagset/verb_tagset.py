@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from utils import replace_chars
 from utils.characters import cyrillic_lowercase_homoglyphs, latin_lowercase_homoglyphs
@@ -12,6 +12,13 @@ class VerbTagset(Tagset):
 
         # Additonal property
         self.is_reflexive = self.pos.endswith("/в")
+
+        # Set only for the moods/tenses that carry them (see __str__)
+        self.tense: Optional[str] = None
+        self.person: Optional[str] = None
+        self.gender: Optional[str] = None
+        self.cls: Optional[str] = None
+        self.role: Optional[str] = None
 
         self.mood = replace_chars(
             grammemes[0], latin_lowercase_homoglyphs, cyrillic_lowercase_homoglyphs

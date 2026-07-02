@@ -50,6 +50,8 @@ def milestone_factory(manuscript_id: str, source: str):
     if source == "\\":
         return ColumnBeginning(manuscript_id)
     if source.startswith("Z"):
-        return PageBeginning(manuscript_id, int(re.search(r"-?\d+", source).group()))
+        match = re.search(r"-?\d+", source)
+        assert match is not None
+        return PageBeginning(manuscript_id, int(match.group()))
 
     raise ValueError(f"Unknown milestone element: {source}")

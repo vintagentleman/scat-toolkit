@@ -37,9 +37,9 @@ class XMLProcessor:
         for num in self.nums:
             # Упаковка <pc> в препозиции
             prev_node = num.previousSibling
-            if prev_node.tagName == "pc":
-                prev_node.tagName = "c"
-                num.insertBefore(prev_node, num.firstChild)
+            if prev_node.tagName == "pc":  # ty: ignore[unresolved-attribute]
+                prev_node.tagName = "c"  # ty: ignore[invalid-assignment]
+                num.insertBefore(prev_node, num.firstChild)  # ty: ignore[invalid-argument-type]
             # Последовательная упаковка <pc> и <num> в постпозиции
             pack_num(num)
 

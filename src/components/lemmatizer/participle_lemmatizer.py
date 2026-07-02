@@ -103,7 +103,7 @@ class ParticipleLemmatizer(VerbLemmatizer):
 
 class ActivePresentLemmatizer(ParticipleLemmatizer):
     @classmethod
-    def modify_stem(cls, stem: str, suffix: str) -> Optional[str]:
+    def modify_stem(cls, stem: str, suffix: Optional[str]) -> Optional[str]:
         if cls.is_stem_in_dictionary(stem, verbs.cls_vii_2):
             return cls.cls_1(stem)
         if suffix in ("Ы", "УЩ"):
@@ -141,7 +141,7 @@ class ActivePresentLemmatizer(ParticipleLemmatizer):
 
 class PassivePresentLemmatizer(ParticipleLemmatizer):
     @classmethod
-    def modify_stem(cls, stem: str, suffix: str) -> Optional[str]:
+    def modify_stem(cls, stem: str, suffix: Optional[str]) -> Optional[str]:
         if suffix == "ОМ":
             return cls.cls_1(stem)
         if suffix == "ЕМ":

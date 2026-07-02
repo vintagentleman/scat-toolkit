@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List
 
-from lxml import etree
+from lxml import etree  # ty: ignore[unresolved-import]
 
 from components.xml_processor import XMLProcessor
 from models.row import Row

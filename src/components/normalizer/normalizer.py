@@ -56,6 +56,7 @@ class Normalizer:
         res = re.sub(Milestone.REGEX, "", res)
 
         if word.is_cardinal_number():
+            assert word.tagset is not None
             return word.tagset.pos  # Non-spelled out numerals
         if word.is_ordinal_number():
             return str(

@@ -1,5 +1,5 @@
 import re
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 from models.tagset import NounTagset
 from models.word import ParsedWord
@@ -12,7 +12,7 @@ from .lib import infl, specials
 class NounLemmatizer(Lemmatizer):
     @classmethod
     def _modify_stem(cls, stem: str, tagset: NounTagset) -> str:
-        def __remove_suffix(s: str, decl: Tuple[str, str]) -> str:
+        def __remove_suffix(s: str, decl: List[str]) -> str:
             for theme in specials.noun_them_suff:
                 if theme in decl:
                     if (
@@ -21,7 +21,7 @@ class NounLemmatizer(Lemmatizer):
                         return s[: -len(suffix.group())]
             return s
 
-        def __add_suffix(s: str, decl: Tuple[str, str]) -> str:
+        def __add_suffix(s: str, decl: List[str]) -> str:
             if decl[0] == "en" and not (
                 s.endswith("ЕН") or re.match("Д[ЪЬ]?Н", s) is not None
             ):

@@ -11,6 +11,7 @@ class Pickler:
     @classmethod
     def pickle(cls, word: Word) -> List[str]:
         ts = word.tagset  # Checked for None in writer module
+        assert ts is not None
 
         if isinstance(ts, NounTagset):
             return [ts.pos, ts.declension[0], ts.case, ts.number, ts.gender]

@@ -1,5 +1,5 @@
 import re
-from typing import Optional
+from typing import Iterable, Optional
 
 from models.tagset import VerbTagset
 from models.word import ParsedWord
@@ -53,7 +53,7 @@ class VerbLemmatizer(Lemmatizer):
         return None
 
     @staticmethod
-    def is_stem_in_dictionary(stem: str, dict_: dict) -> bool:
+    def is_stem_in_dictionary(stem: str, dict_: Iterable[str]) -> bool:
         return any(re.search(regex + "$", stem) for regex in dict_)
 
     @staticmethod
@@ -238,6 +238,7 @@ class VerbLemmatizer(Lemmatizer):
 
         if tagset.mood == "изъяв":
             # Простые времена
+            assert tagset.tense is not None
 
             if tagset.tense == "н/б":
                 # См. Срезневский, т. 1, с. 481
@@ -361,9 +362,7 @@ class VerbLemmatizer(Lemmatizer):
 class PresentLemmatizer(VerbLemmatizer):
     @classmethod
     @skip_none
-    def modify_stem(
-        cls, stem: str, tagset: Optional[VerbTagset] = None
-    ) -> Optional[str]:
+    def modify_stem(cls, stem: str, tagset: VerbTagset) -> Optional[str]:
         # 5 класс
         if tagset.cls == "5" or stem.endswith("БУД"):
             return cls.cls_5(stem)
@@ -376,7 +375,7 @@ class PresentLemmatizer(VerbLemmatizer):
             stem = stem[:-1]
 
         try:
-            return getattr(cls, "cls_" + tagset.cls)(stem)
+            return getattr(cls, f"cls_{tagset.cls}")(stem)
         except AttributeError:
             return None
 
@@ -409,9 +408,7 @@ class SimpleAoristLemmatizer(VerbLemmatizer):
 class SigmaticAoristLemmatizer(VerbLemmatizer):
     @classmethod
     @skip_none
-    def modify_stem(
-        cls, stem: str, tagset: Optional[VerbTagset] = None
-    ) -> Optional[str]:
+    def modify_stem(cls, stem: str, tagset: VerbTagset) -> Optional[str]:
         # Осложнение тематического суффикса
         if tagset.tense == "аор нов" and stem.endswith("О"):
             stem = stem[:-1]
@@ -522,9 +519,7 @@ class ElParticipleLemmatizer(VerbLemmatizer):
 class ImperativeLemmatizer(VerbLemmatizer):
     @classmethod
     @skip_none
-    def modify_stem(
-        cls, stem: str, tagset: Optional[VerbTagset] = None
-    ) -> Optional[str]:
+    def modify_stem(cls, stem: str, tagset: VerbTagset) -> Optional[str]:
         # Удаление тематических гласных
         if (tagset.person, tagset.number) not in (("2", "ед"), ("3", "ед")):
             stem = stem[:-1]

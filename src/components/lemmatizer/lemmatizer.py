@@ -7,7 +7,7 @@ from utils import characters
 
 class Lemmatizer:
     @classmethod
-    def lemmatize(cls, word: ParsedWord, norm: str) -> str:
+    def lemmatize(cls, word: ParsedWord, norm: str) -> Optional[str]:
         lemma = norm
 
         if lemma.endswith(characters.consonants):

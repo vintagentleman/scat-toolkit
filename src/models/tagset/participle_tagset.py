@@ -23,7 +23,7 @@ class ParticipleTagset(Tagset):
 
         self.tense = grammemes[1]
         self.case = grammemes[2].split("/")[-1]
-        
+
         if grammemes[2] == "вин/род":
             self.animate = "одуш"
 
@@ -36,9 +36,23 @@ class ParticipleTagset(Tagset):
     def __str__(self):
         if self.animate:
             return ";".join(
-                [self.declension[1], self.tense, self.case, self.number, self.gender, self.voice, self.animate]
+                [
+                    self.declension[1],
+                    self.tense,
+                    self.case,
+                    self.number,
+                    self.gender,
+                    self.voice,
+                    self.animate,
+                ]
             )
-        else:
-            return ";".join(
-                [self.declension[1], self.tense, self.case, self.number, self.gender, self.voice]
-            )
+        return ";".join(
+            [
+                self.declension[1],
+                self.tense,
+                self.case,
+                self.number,
+                self.gender,
+                self.voice,
+            ]
+        )

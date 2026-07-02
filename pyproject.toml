@@ -17,6 +17,7 @@ dev = [
     "pytest>=8",
     "ty",
     "pre-commit>=3",
+    "commitizen>=3",
 ]
 
 [tool.uv]
@@ -39,3 +40,8 @@ testpaths = ["test"]
 
 [tool.ty.environment]
 extra-paths = ["src"]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_provider = "pep621"
+major_version_zero = true

@@ -1,8 +1,6 @@
 from pathlib import Path
 
-from .conll_writer import CoNLLWriter
 from .pkl_writer import PKLWriter
-from .proiel_writer import ProielXMLWriter
 from .tsv_writer import TSVWriter
 from .txt_writer import TXTWriter
 from .writer import Writer
@@ -18,8 +16,4 @@ def writer_factory(mode: str, path: Path) -> Writer:
         return PKLWriter(path)
     if mode == "xml":
         return XMLWriter(path)
-    if mode == "proiel.xml":
-        return ProielXMLWriter(path)
-    if mode == "conll":
-        return CoNLLWriter(path)
     raise NotImplementedError

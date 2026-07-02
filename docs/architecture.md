@@ -2,7 +2,9 @@
 
 A map of the codebase for contributors. For installation and command-line usage, see the [README](../README.md); this document is about how the pieces fit together.
 
-## Pipeline overview
+## Overview
+
+### Pipeline
 
 The toolkit is three independent command-line programs coupled only through files on disk — there is no shared runtime or orchestration layer. A manuscript moves through them like this:
 
@@ -21,7 +23,7 @@ flowchart TD
 - **`converter.py`** is the main pipeline: it reads an annotation TSV and, per token, normalises the orthography, computes the lemma, and serialises to one of several formats.
 - **`annotator.py`** bootstraps *new* annotation: it takes a tokenised text plus a "precedent" shelf built by `converter.py -m pkl`, and emits an Excel workbook that pre-fills known analyses and offers ambiguous ones as dropdowns.
 
-## Repository layout
+### Repository layout
 
 ```
 src/
@@ -50,7 +52,9 @@ test/                     pytest suite
 scat-content/             corpus content (git submodule)
 ```
 
-## The data model
+## Domain model
+
+### Rows and words
 
 A **`Row`** (`src/models/row.py`) is the unit of a single annotation line. It always carries the raw 7 `columns`, and optionally a `Word`, head/tail `Punctuation`, and a trailing `Milestone`. The 7-column contract is asserted in `Row.__init__`.
 
@@ -60,11 +64,11 @@ A **`Row`** (`src/models/row.py`) is the unit of a single annotation line. It al
 A **`Word`** (`src/models/word.py`) holds the surface `source`, an optional scribal `error` correction, a `tagset`, and the computed `norm` and `lemma`. It exposes the Unicode-converted surface form (`__str__`, `orig`) and its TEI serialisation (`xml`). Two details worth knowing:
 
 - The `lemma` setter (`Word.__setattr__`) title-cases proper nouns and lower-cases everything else, and maps the `+` transliteration character to `Ѣ`.
-- `Word.id` reads `manuscripts[…].token_id`, which **mutates** a counter on every access (see [Manuscripts](#manuscripts-and-resources)).
+- `Word.id` reads `manuscripts[…].token_id`, which **mutates** a counter on every access (see [Resources](#resources)).
 
 `Punctuation`, `Milestone`, and `Number` are small models for the non-word pieces; `milestone_factory` maps the break characters (`&` line, `\` column, `Z <n>` page) to `Milestone` subclasses.
 
-## Morphological model: tagsets
+### Tagsets
 
 `tagset_factory` (`src/models/tagset/__init__.py`) dispatches on the part-of-speech tag in column 1:
 
@@ -87,15 +91,17 @@ Each subclass parses its positional grammemes and defines `__str__`, which produ
 
 Only the TEI writer consumes `Tagset.__str__`. It is written out and never parsed back, so the tag-string layout is not a load-bearing interface — but it *is* the corpus's published morphological signature, so changes to it change every affected token's export.
 
-## Normalisation
+## Processing
+
+### Normalisation
 
 `Normalizer` (`src/components/normalizer/`) maps a manuscript form to a canonical Church Slavonic spelling. It is a port of E. G. Ufland's module, with the substitution rules held as regular-expression tables in `lib.py` and the algorithm in `normalizer.py`. It resolves titlo abbreviations and raised-letter spellings, undoes *TorT*-type liquid metathesis, and — because it runs *after* morphological tagging — uses the known part of speech to disambiguate context-dependent expansions.
 
-## Lemmatisation
+### Lemmatisation
 
 `lemmatizer_factory` (`src/components/lemmatizer/__init__.py`) picks a per-POS lemmatiser; the base `Lemmatizer` handles indeclinables by appending a jer (`Ъ`/`Ь`) to consonant-final forms. The nominal and verbal lemmatisers work by stripping the true inflection — `Lemmatizer.get_stem` matches a paradigm regex, keyed by the grammeme tuple, against the normalised form — and then reconstructing the citation form (nominative singular for nominals, the infinitive for verbs and participles). Auxiliary verbs in analytic tenses receive pseudo-lemmas rather than real ones, to keep frequency counts honest. Tokens whose lemma cannot be resolved are reported to the console by `converter.py` rather than failing the run.
 
-## Writers and output formats
+### Writers and output formats
 
 `writer_factory` (`src/components/writer/__init__.py`) maps a mode string to a writer. All writers subclass `Writer`, a context manager that opens its stream on entry and closes it on exit.
 
@@ -112,7 +118,7 @@ The important structural fact is that **each format renders morphology independe
 
 The `xml` writer post-processes its output through `XMLProcessor` on close (merging adjacent numerals and proper-name elements, pretty-printing).
 
-## Manuscripts and resources
+## Resources
 
 `resources/manuscripts.yaml` maps manuscript IDs to `!Manuscript` objects (`src/models/manuscript.py`), each holding a title and the starting page/column/line used to number the output. The class is a `yaml.YAMLObject`; importing it registers the `!Manuscript` tag, which is why `data/manuscripts.py` imports it for its side effect. Its `token_id` and `chunk_id` are auto-incrementing properties — reading one advances the counter — so writers rely on the order in which they touch a manuscript.
 

@@ -3,6 +3,7 @@ name = "scat-toolkit"
 version = "0.1.0"
 description = "A toolkit for working with the SCAT corpus"
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "click>=8.3",

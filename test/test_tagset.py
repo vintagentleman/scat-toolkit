@@ -12,14 +12,14 @@ from models.tagset.verb_tagset import VerbTagset
     "columns, cls",
     [
         (["сущ", "jo", "род", "ед", "м", ""], NounTagset),
-        (["прил", "тв", "род", "ед", "м", ""], NounTagset),  # adjectives -> NounTagset
-        (["прил/ср", "ja", "вин", "ед", "ж", ""], NounTagset),  # comparatives too
-        (["мест", "м", "род", "ед", "м", ""], NounTagset),  # non-personal pronoun
-        (["мест", "личн", "2", "дат", "ед", ""], PronounTagset),  # personal pronoun
+        (["прил", "тв", "род", "ед", "м", ""], NounTagset),
+        (["прил/ср", "ja", "вин", "ед", "ж", ""], NounTagset),
+        (["мест", "м", "род", "ед", "м", ""], NounTagset),
+        (["мест", "личн", "2", "дат", "ед", ""], PronounTagset),
         (["прич", "м", "прош", "род", "мн", "м"], ParticipleTagset),
         (["гл", "повел", "2", "ед", "4", ""], VerbTagset),
-        (["11"], Tagset),  # cardinal number -> bare Tagset
-        (["союз"], Tagset),  # indeclinable -> bare Tagset
+        (["11"], Tagset),
+        (["союз"], Tagset),
     ],
 )
 def test_tagset_factory_dispatch(columns, cls):
@@ -41,7 +41,6 @@ def test_tagset_str(columns, expected):
 
 
 def test_noun_keeps_factual_case_for_syncretic_accusative():
-    # "вин/род" (accusative realised as genitive) stores the factual (genitive) case
     assert tagset_factory(["сущ", "o", "вин/род", "ед", "м", ""]).case == "род"
 
 
@@ -54,7 +53,6 @@ def test_noun_keeps_factual_case_for_syncretic_accusative():
     ],
 )
 def test_animacy_tag_appended_for_accusative_genitive_syncretism(columns, expected):
-    # "вин/род" surfaces the "одуш" animacy tag that the factual-case collapse would otherwise drop
     tagset = tagset_factory(columns)
     assert tagset.animate == "одуш"
     assert str(tagset) == expected

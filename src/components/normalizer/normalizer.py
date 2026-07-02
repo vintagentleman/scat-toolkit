@@ -4,7 +4,7 @@ from components.normalizer.modif import modif
 from models.milestone import Milestone
 from models.number import Number
 from models.tagset.noun_tagset import NounTagset
-from models.word import Word
+from models.word import ParsedWord
 from utils import characters, replace_chars
 
 
@@ -43,7 +43,7 @@ class Normalizer:
         return "И"
 
     @classmethod
-    def normalize(cls, word: Word) -> str:
+    def normalize(cls, word: ParsedWord) -> str:
         res = word.source.strip().upper()
 
         # Remove yer before linebreak unless tagged otherwise

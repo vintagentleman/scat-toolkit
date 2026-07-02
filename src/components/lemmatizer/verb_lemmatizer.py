@@ -2,7 +2,7 @@ import re
 from typing import Optional
 
 from models.tagset import VerbTagset
-from models.word import Word
+from models.word import ParsedWord
 from utils import characters, skip_none
 
 from .lemmatizer import Lemmatizer
@@ -222,9 +222,9 @@ class VerbLemmatizer(Lemmatizer):
         return None
 
     @classmethod
-    def lemmatize(cls, word: Word) -> Optional[str]:
-        norm = word.norm
+    def lemmatize(cls, word: ParsedWord, norm: str) -> Optional[str]:
         tagset = word.tagset
+        assert isinstance(tagset, VerbTagset)
         lemma = None
 
         if tagset.is_reflexive:

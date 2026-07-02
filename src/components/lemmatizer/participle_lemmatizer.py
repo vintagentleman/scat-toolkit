@@ -1,7 +1,8 @@
 import re
 from typing import Optional
 
-from models.word import Word
+from models.tagset import ParticipleTagset
+from models.word import ParsedWord
 from utils import characters
 
 from .lib import infl, specials, verbs
@@ -10,9 +11,9 @@ from .verb_lemmatizer import VerbLemmatizer
 
 class ParticipleLemmatizer(VerbLemmatizer):
     @classmethod
-    def lemmatize(cls, word: Word) -> Optional[str]:
-        norm = word.norm
+    def lemmatize(cls, word: ParsedWord, norm: str) -> Optional[str]:
         tagset = word.tagset
+        assert isinstance(tagset, ParticipleTagset)
         suffix = None
 
         if tagset.is_reflexive:

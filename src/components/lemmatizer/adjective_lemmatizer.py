@@ -2,7 +2,7 @@ import re
 from typing import Optional
 
 from models.tagset import NounTagset
-from models.word import Word
+from models.word import ParsedWord
 from utils import characters
 
 from .lib import infl
@@ -28,9 +28,10 @@ class AdjectiveLemmatizer(NounLemmatizer):
         return "И" if stem.endswith(characters.vowels) else "ИИ"
 
     @classmethod
-    def lemmatize(cls, word: Word) -> Optional[str]:
-        norm = word.norm if word.norm.endswith(characters.vowels) else f"{word.norm}`"
+    def lemmatize(cls, word: ParsedWord, norm: str) -> Optional[str]:
+        norm = norm if norm.endswith(characters.vowels) else f"{norm}`"
         tagset = word.tagset
+        assert isinstance(tagset, NounTagset)
 
         # Стемминг
         stem = cls.get_stem(

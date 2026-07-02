@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from .milestone import Milestone, milestone_factory
 from .punctuation import Punctuation
-from .word import Word
+from .word import ParsedWord, Word
 
 
 class Row(ABC):
@@ -52,8 +52,10 @@ class WordRow(Row):
                 Punctuation(manuscript_id, match.group()),
             )
 
-        self.word = (
-            Word(manuscript_id, self.source, self.columns[1:]) if self.source else None
+        self.parsed_word: Optional[ParsedWord] = (
+            ParsedWord(manuscript_id, self.source, self.columns[1:])
+            if self.source
+            else None
         )
 
     def __str__(self):

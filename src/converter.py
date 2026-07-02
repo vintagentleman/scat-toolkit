@@ -9,6 +9,7 @@ from components.lemmatizer import lemmatizer_factory
 from components.normalizer.normalizer import Normalizer
 from components.writer import writer_factory
 from models.row import Row, WordRow, XMLRow
+from models.word import Word
 
 __root__ = Path(__file__).resolve().parents[1]
 
@@ -29,18 +30,20 @@ class Text:
                     row = XMLRow(self.manuscript_id, line)
                 else:
                     row = WordRow(self.manuscript_id, line)
+                    parsed = row.parsed_word
 
-                    if row.word is not None:
-                        row.word.norm = Normalizer.normalize(row.word)
+                    if parsed is not None:
+                        norm = Normalizer.normalize(parsed)
 
-                    if row.word is not None and row.word.tagset is not None:
-                        if (
-                            lemma := lemmatizer_factory(row.word).lemmatize(row.word)
-                        ) is None:
-                            click.echo(
-                                f"[{self.manuscript_id}] Lemmatization failed for row {i + 1}: {row} {row.word.pos};{row.word.tagset}"
-                            )
-                        row.word.lemma = lemma
+                        lemma = None
+                        if parsed.tagset is not None:
+                            lemma = lemmatizer_factory(parsed).lemmatize(parsed, norm)
+                            if lemma is None:
+                                click.echo(
+                                    f"[{self.manuscript_id}] Lemmatization failed for row {i + 1}: {parsed} {parsed.pos};{parsed.tagset}"
+                                )
+
+                        row.word = Word(parsed, norm, lemma)
 
                 self.rows.append(row)
 

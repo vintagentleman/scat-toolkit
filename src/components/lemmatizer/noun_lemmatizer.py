@@ -2,7 +2,7 @@ import re
 from typing import Optional, Tuple
 
 from models.tagset import NounTagset
-from models.word import Word
+from models.word import ParsedWord
 from utils import characters
 
 from .lemmatizer import Lemmatizer
@@ -140,10 +140,11 @@ class NounLemmatizer(Lemmatizer):
             return "И"
 
     @classmethod
-    def lemmatize(cls, word: Word) -> Optional[str]:
+    def lemmatize(cls, word: ParsedWord, norm: str) -> Optional[str]:
         # Добавление номинального гласного
-        norm = word.norm if word.norm.endswith(characters.vowels) else f"{word.norm}`"
+        norm = norm if norm.endswith(characters.vowels) else f"{norm}`"
         tagset = word.tagset
+        assert isinstance(tagset, NounTagset)
 
         # Проверка исключительных случаев
         for key in specials.noun:

@@ -2,7 +2,7 @@ import re
 from typing import Optional
 
 from models.tagset import NounTagset
-from models.word import Word
+from models.word import ParsedWord
 from utils import characters
 
 from .adjective_lemmatizer import AdjectiveLemmatizer
@@ -55,9 +55,11 @@ class NumeralLemmatizer(AdjectiveLemmatizer):
             return AdjectiveLemmatizer.get_suffix(stem, tagset)
 
     @classmethod
-    def lemmatize(cls, word: Word) -> Optional[str]:
-        norm = word.norm if word.norm.endswith(characters.vowels) else f"{word.norm}`"
+    def lemmatize(cls, word: ParsedWord, norm: str) -> Optional[str]:
+        original = norm
+        norm = original if original.endswith(characters.vowels) else f"{original}`"
         tagset = word.tagset
+        assert isinstance(tagset, NounTagset)
 
         # Обработка НЕ- и -ЖЕ/-ЖДО
         neg, zhe = None, None
@@ -69,7 +71,7 @@ class NumeralLemmatizer(AdjectiveLemmatizer):
                 norm = norm[len(neg.group()) :]
 
         if not norm.endswith(characters.vowels):
-            norm = f"{word.norm}`"  # Добавление номинального гласного
+            norm = f"{original}`"  # Добавление номинального гласного
 
         if word.pos == "мест":
             # Проверка исключительных случаев

@@ -1,14 +1,14 @@
 import re
 from typing import Optional
 
-from models.word import Word
+from models.word import ParsedWord
 from utils import characters
 
 
 class Lemmatizer:
     @classmethod
-    def lemmatize(cls, word: Word) -> Optional[str]:
-        lemma = word.norm
+    def lemmatize(cls, word: ParsedWord, norm: str) -> str:
+        lemma = norm
 
         if lemma.endswith(characters.consonants):
             lemma += "Ь" if lemma[-1] in characters.hush_consonants else "Ъ"

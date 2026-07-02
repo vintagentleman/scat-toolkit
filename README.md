@@ -70,7 +70,7 @@ Output: `generated/tokenizer/<manuscript>.tsv`.
 
 ### 2. `converter.py` — annotated TSV → normalised, lemmatised output
 
-The main pipeline. For each token it normalises the orthography, computes the lemma (dispatched by part of speech), optionally segments the text into sentences (`--chunks`), and serialises the result in the chosen format. Tokens whose lemma cannot be resolved are reported to the console.
+The main pipeline. For each token it normalises the orthography, computes the lemma (dispatched by part of speech), and serialises the result in the chosen format. Tokens whose lemma cannot be resolved are reported to the console.
 
 ```sh
 # convert all morphological annotations to TEI XML (the default)
@@ -84,7 +84,6 @@ uv run python src/converter.py -m tsv
 | --- | --- | --- |
 | `-m, --mode` | `xml` | output format (see below) |
 | `-p, --path` | `scat-content/annotation/morphological` | source directory |
-| `--chunks / --no-chunks` | `--no-chunks` | segment into sentences |
 | `GLOB` (argument) | `*.tsv` | which files to read |
 
 Output: `generated/converter/<mode>/<manuscript>.<mode>`.
@@ -95,7 +94,6 @@ Output: `generated/converter/<mode>/<manuscript>.<mode>`.
 - **`xml`** — TEI P5, structured for import into [TXM](https://txm.gitpages.huma-num.fr/textometrie/) (XTZ profile). Each word is a `<w>` carrying its surface form, normalised form, morphological tag string, and lemma. The publication format.
 - **`txt`** — plain running text in Church Slavonic Unicode (surface forms only).
 - **`pkl`** — a `shelve` database mapping each normalised form to its attested analyses. Not an end product: it is the "precedent" store consumed by `annotator.py`. Unlike the other modes it is keyed by date and merges all input documents into one shelf.
-- **`proiel.xml`, `conll`** — *legacy.* Early experiments targeting the PROIEL treebank and CoNLL-U formats; retained for reference but no longer maintained or used in practice.
 
 ### 3. `annotator.py` — semi-automatic morphological annotation
 

@@ -9,6 +9,7 @@ class Tagset:
         self.case: Optional[str] = None
         self.number: Optional[str] = None
         self.gender: Optional[str] = None
+        self.animate: Optional[str] = None
 
         self.person: Optional[str] = None
 

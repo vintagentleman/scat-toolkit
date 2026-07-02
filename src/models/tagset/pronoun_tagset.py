@@ -9,7 +9,13 @@ class PronounTagset(Tagset):
 
         self.person = grammemes[1]
         self.case = grammemes[2].split("/")[-1]
+        if grammemes[2] == "вин/род":
+            self.animate = "одуш"
         self.number = grammemes[3].split("/")[-1] if self.person != "возвр" else "ед"
 
     def __str__(self):
-        return ";".join([self.person, self.case, self.number])
+        if self.animate:
+            return ";".join([self.person, self.case, self.number, self.animate])
+        else:
+            return ";".join([self.person, self.case, self.number])
+

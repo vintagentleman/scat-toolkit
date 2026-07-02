@@ -76,6 +76,7 @@ class NounTagset(Tagset):
 
     def __str__(self):
         if self.animate:
-            return ";".join([self.declension[1], self.case, self.number, self.gender, self.animate])
-        else:
-            return ";".join([self.declension[1], self.case, self.number, self.gender])
+            return ";".join(
+                [self.declension[1], self.case, self.number, self.gender, self.animate]
+            )
+        return ";".join([self.declension[1], self.case, self.number, self.gender])

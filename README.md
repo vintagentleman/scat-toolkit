@@ -122,10 +122,10 @@ Output: `generated/annotator/<text>.xlsx`.
 
 ## Development
 
-Install the git hooks once:
+Install the git hooks once (pre-commit checks and commit-message linting):
 
 ```sh
-uv run pre-commit install
+uv run pre-commit install --hook-type pre-commit --hook-type commit-msg
 ```
 
 Linting and formatting use [ruff](https://docs.astral.sh/ruff/); tests use [pytest](https://docs.pytest.org/):
@@ -136,3 +136,5 @@ uv run ruff format      # format
 uv run pytest           # run the tests
 uv run ty check src     # type-check (advisory, not enforced in CI)
 ```
+
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/), enforced by [commitizen](https://commitizen-tools.github.io/commitizen/) via the `commit-msg` hook.

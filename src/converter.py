@@ -11,7 +11,6 @@ from components.normalizer.normalizer import Normalizer
 from components.writer import writer_factory
 from models.row import Row, WordRow, XMLRow
 
-
 __root__ = Path(__file__).resolve().parents[1]
 
 

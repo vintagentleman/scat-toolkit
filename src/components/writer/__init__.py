@@ -1,12 +1,12 @@
 from pathlib import Path
 
-from .writer import Writer
-from .txt_writer import TXTWriter
-from .tsv_writer import TSVWriter
-from .pkl_writer import PKLWriter
-from .xml_writer import XMLWriter
-from .proiel_writer import ProielXMLWriter
 from .conll_writer import CoNLLWriter
+from .pkl_writer import PKLWriter
+from .proiel_writer import ProielXMLWriter
+from .tsv_writer import TSVWriter
+from .txt_writer import TXTWriter
+from .writer import Writer
+from .xml_writer import XMLWriter
 
 
 def writer_factory(mode: str, path: Path) -> Writer:

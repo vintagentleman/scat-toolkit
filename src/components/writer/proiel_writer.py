@@ -4,9 +4,10 @@ from typing import List
 
 from lxml import etree
 
-from models.row import Row
-from models.proiel.proiel import PToken
 from data.manuscripts import manuscripts
+from models.proiel.proiel import PToken
+from models.row import Row
+
 from .writer import Writer
 
 
@@ -30,7 +31,11 @@ class ProielXMLWriter(Writer):
 
         self.root.append(
             etree.XML(
-                Path.joinpath(Path(__file__).resolve().parents[3], "resources", "proiel_schema.xml")
+                Path.joinpath(
+                    Path(__file__).resolve().parents[3],
+                    "resources",
+                    "proiel_schema.xml",
+                )
                 .open(encoding="utf-8")
                 .read(),
                 etree.XMLParser(remove_blank_text=True),

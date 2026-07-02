@@ -32,4 +32,4 @@ class Manuscript(YAMLObject):
 
     @chunk_id.setter
     def chunk_id(self, value):
-        self._token_id = value
+        self._chunk_id = value

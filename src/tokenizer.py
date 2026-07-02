@@ -9,7 +9,6 @@ from models.row import Row, WordRow, XMLRow
 from utils import replace_chars
 from utils.characters import cyrillic_homoglyphs, latin_homoglyphs
 
-
 __root__ = Path(__file__).resolve().parents[1]
 
 
@@ -101,9 +100,12 @@ def main(path: str, encoding: str, glob: str):
     Path.joinpath(__root__, "generated", "tokenizer").mkdir(exist_ok=True)
 
     for filepath in filepaths:
-        with open(filepath, mode="r", encoding=encoding) as raw, Path.joinpath(
-            __root__, "generated", "tokenizer", f"{filepath.stem}.tsv"
-        ).open(mode="w", encoding="utf-8") as tokenized:
+        with (
+            open(filepath, mode="r", encoding=encoding) as raw,
+            Path.joinpath(
+                __root__, "generated", "tokenizer", f"{filepath.stem}.tsv"
+            ).open(mode="w", encoding="utf-8") as tokenized,
+        ):
             for line in raw.readlines():
                 parsed = parse_line(filepath.stem, line)
                 for token in generate_token(*parsed):

@@ -2,9 +2,8 @@ from functools import partial
 
 import pytest
 
-from src.models.word import Word
-from src.components.normalizer.normalizer import Normalizer
-
+from components.normalizer.normalizer import Normalizer
+from models.word import Word
 
 Word = partial(Word, "DGlush")
 
@@ -14,6 +13,9 @@ Word = partial(Word, "DGlush")
     [
         (Word("*IС(с)А", ["сущ", "o", "вин/род", "ед", "м", ""]), "ИИСУСА"),
         (Word("*IС(с)ОВD", ["прил", "a", "вин", "ед", "ж", ""]), "ИИСУСОВУ"),
+        (Word("М(с)ЦА", ["сущ", "jo", "род", "ед", "м", ""]), "МЕСЯЦА"),
+        (Word("ПРПW(ДО)&БНАГО", ["прил", "тв", "род", "ед", "м", ""]), "ПРЕПОДОБНАГО"),
+        (Word("БЛ(с)ВИ", ["гл", "повел", "2", "ед", "4", ""]), "БЛАГОСЛОВИ"),
     ],
 )
 def test_normalizer(word, norm):

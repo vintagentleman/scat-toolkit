@@ -22,7 +22,11 @@ class VerbLemmatizer(Lemmatizer):
         for regex in dict_:
             if (mo := re.match(r"(.*){}$".format(regex), stem)) is not None:
                 return (
-                    re.sub(r"(.*){}$".format(regex), mo.group(1) + dict_[regex], stem,)
+                    re.sub(
+                        r"(.*){}$".format(regex),
+                        mo.group(1) + dict_[regex],
+                        stem,
+                    )
                     + suffix
                 )
         return None
@@ -242,22 +246,34 @@ class VerbLemmatizer(Lemmatizer):
                 else:
                     lemma = PresentLemmatizer.modify_stem(
                         cls.get_stem(
-                            norm, (tagset.person, tagset.number), infl.present,
+                            norm,
+                            (tagset.person, tagset.number),
+                            infl.present,
                         ),
                         tagset,
                     )
             elif tagset.tense == "имп":
                 lemma = ImperfectLemmatizer.modify_stem(
-                    cls.get_stem(norm, (tagset.person, tagset.number), infl.imperfect,)
+                    cls.get_stem(
+                        norm,
+                        (tagset.person, tagset.number),
+                        infl.imperfect,
+                    )
                 )
             elif tagset.tense == "прош":
                 lemma = ElParticipleLemmatizer.modify_stem(
-                    cls.get_stem(norm, (tagset.gender, tagset.number), infl.part_el,)
+                    cls.get_stem(
+                        norm,
+                        (tagset.gender, tagset.number),
+                        infl.part_el,
+                    )
                 )
             elif tagset.tense == "аор пр":
                 lemma = SimpleAoristLemmatizer.modify_stem(
                     cls.get_stem(
-                        norm, (tagset.person, tagset.number), infl.aorist_simple,
+                        norm,
+                        (tagset.person, tagset.number),
+                        infl.aorist_simple,
                     )
                 )
             elif tagset.tense.startswith("аор"):
@@ -267,14 +283,16 @@ class VerbLemmatizer(Lemmatizer):
                     and tagset.person in ("2", "3")
                     and tagset.number == "ед"
                 ):
-                    if (mo := re.search("(?<!\+)С?Т[ЪЬ`]$", norm)) is not None:
+                    if (mo := re.search(r"(?<!\+)С?Т[ЪЬ`]$", norm)) is not None:
                         lemma = norm[: -len(mo.group())] + "ТИ"
                     else:
                         lemma = norm + "ТИ"
                 else:
                     lemma = SigmaticAoristLemmatizer.modify_stem(
                         cls.get_stem(
-                            norm, (tagset.person, tagset.number), infl.aorist_sigm,
+                            norm,
+                            (tagset.person, tagset.number),
+                            infl.aorist_sigm,
                         ),
                         tagset,
                     )
@@ -283,14 +301,18 @@ class VerbLemmatizer(Lemmatizer):
                 # Тут лексема одна
                 if tagset.tense == "буд":
                     stem = cls.get_stem(
-                        norm, (tagset.person, tagset.number), infl.present,
+                        norm,
+                        (tagset.person, tagset.number),
+                        infl.present,
                     )
                 else:
                     stem = (
                         norm
                         if tagset.person in ("2", "3") and tagset.number == "ед"
                         else cls.get_stem(
-                            norm, (tagset.person, tagset.number), infl.aorist_sigm,
+                            norm,
+                            (tagset.person, tagset.number),
+                            infl.aorist_sigm,
                         )
                     )
 
@@ -304,7 +326,9 @@ class VerbLemmatizer(Lemmatizer):
                 if tagset.role is not None and tagset.role.startswith("пр"):
                     lemma = ElParticipleLemmatizer.modify_stem(
                         cls.get_stem(
-                            norm, (tagset.gender, tagset.number), infl.part_el,
+                            norm,
+                            (tagset.gender, tagset.number),
+                            infl.part_el,
                         ),
                     )
 
@@ -312,12 +336,20 @@ class VerbLemmatizer(Lemmatizer):
             tagset.role is not None and tagset.role.startswith("пр")
         ):
             lemma = ElParticipleLemmatizer.modify_stem(
-                cls.get_stem(norm, (tagset.gender, tagset.number), infl.part_el,)
+                cls.get_stem(
+                    norm,
+                    (tagset.gender, tagset.number),
+                    infl.part_el,
+                )
             )
 
         elif tagset.mood == "повел":
             lemma = ImperativeLemmatizer.modify_stem(
-                cls.get_stem(norm, (tagset.person, tagset.number), infl.imperative,),
+                cls.get_stem(
+                    norm,
+                    (tagset.person, tagset.number),
+                    infl.imperative,
+                ),
                 tagset,
             )
 
@@ -429,7 +461,9 @@ class ImperfectLemmatizer(VerbLemmatizer):
         for regex in specials.imperfect:
             if (mo := re.match(regex, stem)) is not None:
                 modified_stem = re.sub(
-                    regex, mo.group(1) + specials.imperfect[regex], stem,
+                    regex,
+                    mo.group(1) + specials.imperfect[regex],
+                    stem,
                 )
                 if stem != modified_stem:
                     return modified_stem + "ТИ"

@@ -2,9 +2,9 @@ import re
 from typing import List, Optional
 
 from components.unicode_converter import UnicodeConverter
+from data.manuscripts import manuscripts
 from models.milestone import Milestone, milestone_factory
 from models.tagset import Tagset, tagset_factory
-from data.manuscripts import manuscripts
 from utils import replace_chars
 from utils.characters import cyrillic_homoglyphs, latin_homoglyphs
 
@@ -93,10 +93,9 @@ class Word:
 
         if not self.is_cardinal_number() and self.tagset is not None:
             attrs.append(f'pos="{self.tagset.pos}"')
-            if (
-                type(self.tagset) != Tagset
-            ):  # Only members of strict subclasses have annotation
-                attrs.append(f'msd="{str(self.tagset)}"')
+            # Only members of strict subclasses have annotation
+            if type(self.tagset) is not Tagset:
+                attrs.append(f'msd="{self.tagset}"')
 
         if self.norm is not None:
             attrs.append(f'norm="{self.norm}"')

@@ -1,7 +1,7 @@
 import re
 
-from models.manuscript import Manuscript
 from data.manuscripts import manuscripts
+from models.manuscript import Manuscript
 
 
 class Milestone:

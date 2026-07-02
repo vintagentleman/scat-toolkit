@@ -3,8 +3,8 @@ from contextlib import AbstractContextManager
 from pathlib import Path
 from typing import List
 
-from models.row import Row
 from data.manuscripts import manuscripts
+from models.row import Row
 
 
 class Writer(AbstractContextManager):

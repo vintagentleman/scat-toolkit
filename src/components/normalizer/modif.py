@@ -1,6 +1,7 @@
 import re
 
 from utils import characters
+
 from . import lib
 
 
@@ -17,7 +18,6 @@ def repl(w, d, mode="search"):
     """Замена буквосочетания"""
 
     for coll in d:
-
         if mode == "match":
             if re.match(coll, w):
                 w = re.sub(coll, d[coll], w, 1)
@@ -33,7 +33,6 @@ def repl_var(w, p, d, mode="search"):
     """Замена неоднозначного буквосочетания"""
 
     for coll in d:
-
         if mode == "match":
             if re.match(coll, w):
                 if p in d[coll]:

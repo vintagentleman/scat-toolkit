@@ -1,9 +1,10 @@
 import shelve
 from pathlib import Path
 
-from models.row import Row
-from .writer import Writer
 from components.pickler import Pickler
+from models.row import Row
+
+from .writer import Writer
 
 
 class PKLWriter(Writer):

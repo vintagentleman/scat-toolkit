@@ -16,6 +16,4 @@ class PronounTagset(Tagset):
     def __str__(self):
         if self.animate:
             return ";".join([self.person, self.case, self.number, self.animate])
-        else:
-            return ";".join([self.person, self.case, self.number])
-
+        return ";".join([self.person, self.case, self.number])

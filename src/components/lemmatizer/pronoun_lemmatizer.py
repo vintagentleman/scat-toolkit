@@ -1,7 +1,8 @@
 import re
 from typing import Optional
 
-from models.word import Word
+from models.tagset import PronounTagset
+from models.word import ParsedWord
 from utils import characters
 
 from .lemmatizer import Lemmatizer
@@ -10,9 +11,10 @@ from .lib import infl
 
 class PronounLemmatizer(Lemmatizer):
     @classmethod
-    def lemmatize(cls, word: Word) -> Optional[str]:
-        norm = word.norm if word.norm.endswith(characters.vowels) else f"{word.norm}`"
+    def lemmatize(cls, word: ParsedWord, norm: str) -> Optional[str]:
+        norm = norm if norm.endswith(characters.vowels) else f"{norm}`"
         tagset = word.tagset
+        assert isinstance(tagset, PronounTagset)
 
         if tagset.person == "возвр" and tagset.case in infl.pron_refl:
             if re.match(infl.pron_refl[tagset.case][0], norm) is not None:

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from .tagset import Tagset
 
@@ -9,8 +9,7 @@ class PronounTagset(Tagset):
 
         self.person = grammemes[1]
         self.case = grammemes[2].split("/")[-1]
-        if grammemes[2] == "вин/род":
-            self.animate = "одуш"
+        self.animate: Optional[str] = "одуш" if grammemes[2] == "вин/род" else None
         self.number = grammemes[3].split("/")[-1] if self.person != "возвр" else "ед"
 
     def __str__(self):

@@ -1,5 +1,5 @@
 from models.tagset import PronounTagset
-from models.word import Word
+from models.word import ParsedWord
 
 from .adjective_lemmatizer import AdjectiveLemmatizer
 from .lemmatizer import Lemmatizer
@@ -11,7 +11,7 @@ from .supine_lemmatizer import SupineLemmatizer
 from .verb_lemmatizer import VerbLemmatizer
 
 
-def lemmatizer_factory(word: Word):
+def lemmatizer_factory(word: ParsedWord):
     if word.pos == "сущ":
         return NounLemmatizer
     if word.pos in ("прил", "прил/ср", "числ/п"):

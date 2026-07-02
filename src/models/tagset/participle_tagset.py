@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from utils import replace_chars
 from utils.characters import cyrillic_lowercase_homoglyphs, latin_lowercase_homoglyphs
@@ -23,10 +23,7 @@ class ParticipleTagset(Tagset):
 
         self.tense = grammemes[1]
         self.case = grammemes[2].split("/")[-1]
-
-        if grammemes[2] == "вин/род":
-            self.animate = "одуш"
-
+        self.animate: Optional[str] = "одуш" if grammemes[2] == "вин/род" else None
         self.number = grammemes[3].split("/")[-1]
         self.gender = grammemes[4].split("/")[-1] if grammemes[4] != "0" else "м"
 

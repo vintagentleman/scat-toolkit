@@ -95,16 +95,18 @@ class Annotator:
                     if line[0].startswith("<"):  # Skip XML words
                         continue
 
-                    row = WordRow(self.text.stem, list(map(str.strip, line)))
+                    parsed = WordRow(
+                        self.text.stem, list(map(str.strip, line))
+                    ).parsed_word
 
-                    if row.word is None:  # Skip non-word rows
+                    if parsed is None:  # Skip non-word rows
                         continue
 
-                    row.word.norm = Normalizer.normalize(row.word)
+                    norm = Normalizer.normalize(parsed)
 
-                    # Skip words w/o norms or with those not in shelf
-                    if row.word.norm is not None and row.word.norm in self.pickle:
-                        tagsets = self._transform_tagsets_using_clusters(row.word.norm)
+                    # Skip words whose norm isn't in the shelf
+                    if norm in self.pickle:
+                        tagsets = self._transform_tagsets_using_clusters(norm)
 
                         # Если разбор один, то помечаем его и не учитываем при подсчёте
                         if len(tagsets) == 1:

@@ -1,7 +1,8 @@
 import re
 from typing import Optional
 
-from models.word import Word
+from models.tagset import ParticipleTagset
+from models.word import ParsedWord
 from utils import characters
 
 from .lib import infl, specials, verbs
@@ -10,9 +11,9 @@ from .verb_lemmatizer import VerbLemmatizer
 
 class ParticipleLemmatizer(VerbLemmatizer):
     @classmethod
-    def lemmatize(cls, word: Word) -> Optional[str]:
-        norm = word.norm
+    def lemmatize(cls, word: ParsedWord, norm: str) -> Optional[str]:
         tagset = word.tagset
+        assert isinstance(tagset, ParticipleTagset)
         suffix = None
 
         if tagset.is_reflexive:
@@ -102,7 +103,7 @@ class ParticipleLemmatizer(VerbLemmatizer):
 
 class ActivePresentLemmatizer(ParticipleLemmatizer):
     @classmethod
-    def modify_stem(cls, stem: str, suffix: str) -> Optional[str]:
+    def modify_stem(cls, stem: str, suffix: Optional[str]) -> Optional[str]:
         if cls.is_stem_in_dictionary(stem, verbs.cls_vii_2):
             return cls.cls_1(stem)
         if suffix in ("Ы", "УЩ"):
@@ -140,7 +141,7 @@ class ActivePresentLemmatizer(ParticipleLemmatizer):
 
 class PassivePresentLemmatizer(ParticipleLemmatizer):
     @classmethod
-    def modify_stem(cls, stem: str, suffix: str) -> Optional[str]:
+    def modify_stem(cls, stem: str, suffix: Optional[str]) -> Optional[str]:
         if suffix == "ОМ":
             return cls.cls_1(stem)
         if suffix == "ЕМ":

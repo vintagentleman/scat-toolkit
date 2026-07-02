@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from contextlib import AbstractContextManager
 from pathlib import Path
-from typing import List
+from typing import Any, List
 
 from data.manuscripts import manuscripts
 from models.row import Row
@@ -12,7 +12,7 @@ class Writer(AbstractContextManager):
     def __init__(self, path: Path):
         self.path = path
         self.manuscript = manuscripts.get(path.stem)
-        self.stream = NotImplemented
+        self.stream: Any = None
 
     @abstractmethod
     def write_row(self, row: Row):

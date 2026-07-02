@@ -1,17 +1,20 @@
 import re
-from typing import List
+from typing import List, Optional
 
-from models.tagset import NounTagset, ParticipleTagset, PronounTagset, VerbTagset
-from models.word import Word
+from models.tagset import (
+    NounTagset,
+    ParticipleTagset,
+    PronounTagset,
+    Tagset,
+    VerbTagset,
+)
 
 
 class Pickler:
     AUXILIARY_VERBS = ("НАЧАТИ", "ХОТ+ТИ", "ИМ+ТИ")
 
     @classmethod
-    def pickle(cls, word: Word) -> List[str]:
-        ts = word.tagset  # Checked for None in writer module
-
+    def pickle(cls, ts: Tagset, lemma: Optional[str]) -> List[str]:
         if isinstance(ts, NounTagset):
             return [ts.pos, ts.declension[0], ts.case, ts.number, ts.gender]
 
@@ -25,7 +28,7 @@ class Pickler:
             class_ = ts.cls if ts.cls is not None else ""
 
             if ts.mood == "повел":
-                return [ts.pos, ts.mood, ts.person, ts.number, class_]
+                return [ts.pos, ts.mood, ts.person or "", ts.number, class_]
 
             # We can guarantee that mood is subjunctive only for auxiliaries.
             if ts.mood == "сосл" and ts.person is not None:
@@ -39,15 +42,15 @@ class Pickler:
             if (
                 ts.tense is not None
                 and re.match(r"(н/б|буд ?1)", ts.tense)
-                and word.lemma in cls.AUXILIARY_VERBS
+                and lemma in cls.AUXILIARY_VERBS
             ):
-                return [ts.pos, ts.mood, "", ts.person, ts.number, class_]
+                return [ts.pos, ts.mood, "", ts.person or "", ts.number, class_]
 
             return [
                 ts.pos,
                 ts.mood,
                 ts.tense if ts.tense is not None else "",
-                ts.person,
+                ts.person or "",
                 ts.number,
                 class_,
             ]

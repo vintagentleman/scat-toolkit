@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from utils import replace_chars
 from utils.characters import cyrillic_lowercase_homoglyphs, latin_lowercase_homoglyphs
@@ -33,9 +33,7 @@ class NounTagset(Tagset):
 
         # Save the factual case only
         self.case = grammemes[1].split("/")[-1]
-
-        if grammemes[1] == "вин/род":
-            self.animate = "одуш"
+        self.animate: Optional[str] = "одуш" if grammemes[1] == "вин/род" else None
 
         # Additional property
         self.is_plurale_tantum = grammemes[2] == "pt"

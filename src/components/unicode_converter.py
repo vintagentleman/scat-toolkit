@@ -51,9 +51,13 @@ class UnicodeConverter:
     @classmethod
     def __skip_chars(cls, text: str, start: int) -> int:
         if text[start] == "<":
-            start += len(re.search(r"(<.+?>)", text[start:]).group(1))
+            match = re.search(r"(<.+?>)", text[start:])
+            assert match is not None
+            start += len(match.group(1))
         elif text[start] == "&":
-            start += len(re.search(r"(&.+?;)", text[start:]).group(1)) - 1
+            match = re.search(r"(&.+?;)", text[start:])
+            assert match is not None
+            start += len(match.group(1)) - 1
 
         if text[start] in "<&":
             start = cls.__skip_chars(text, start)

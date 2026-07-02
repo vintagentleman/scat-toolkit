@@ -9,11 +9,13 @@ from utils import replace_chars
 from utils.characters import cyrillic_homoglyphs, latin_homoglyphs
 
 
-class Word:
+class ParsedWord:
+    """A word as tokenisation leaves it: surface form and tagset, not yet analysed."""
+
     def __init__(self, manuscript_id: str, source: str, grammemes: List[str]):
         self.manuscript_id = manuscript_id
         self.source = replace_chars(source, latin_homoglyphs, cyrillic_homoglyphs)
-        self.error = None
+        self.error: Optional[str] = None
 
         # Extract correction with break characters removed
         if "<" in source:
@@ -25,18 +27,10 @@ class Word:
             )
 
         self.is_proper = self.source.startswith("*")
-        self.source = (
-            self.source[1:] if self.is_proper else self.source
-        )  # Remove property marker
+        self.source = self.source[1:] if self.is_proper else self.source
 
-        # Check that tagset is not empty before assignment
         self.tagset = tagset_factory(grammemes) if grammemes[0] else None
-
-        self.pos = (
-            self.tagset.pos if self.tagset is not None else None
-        )  # Add POS alias for convenience
-        self.norm: Optional[str] = None
-        self.lemma: Optional[str] = None
+        self.pos = self.tagset.pos if self.tagset is not None else None
 
     def is_cardinal_number(self) -> bool:
         return self.tagset is not None and self.tagset.pos.isnumeric()
@@ -50,6 +44,29 @@ class Word:
 
     def source_to_unicode(self) -> str:
         return UnicodeConverter.convert(re.sub(Milestone.REGEX, "", self.source))
+
+    def __str__(self) -> str:
+        return UnicodeConverter.convert(
+            re.sub(
+                Milestone.REGEX, "", self.source if self.error is None else self.error
+            )
+        )
+
+
+class Word(ParsedWord):
+    """An analysed word: a ParsedWord plus its computed normalisation and lemma."""
+
+    def __init__(self, parsed: ParsedWord, norm: str, lemma: Optional[str]):
+        vars(self).update(vars(parsed))  # carry over the parsed state
+
+        self.norm = norm
+        if lemma is not None:
+            lemma = (
+                lemma.replace("+", "Ѣ").title()
+                if self.is_proper
+                else lemma.replace("+", "Ѣ").lower()
+            )
+        self.lemma = lemma
 
     @property
     def id(self):
@@ -71,23 +88,6 @@ class Word:
 
         return UnicodeConverter.convert("".join(elements))
 
-    def __setattr__(self, key, value):
-        # Custom lemma setter
-        if key == "lemma" and isinstance(value, str):
-            value = (
-                value.replace("+", "Ѣ").title()
-                if self.is_proper
-                else value.replace("+", "Ѣ").lower()
-            )
-        super(Word, self).__setattr__(key, value)
-
-    def __str__(self):
-        return UnicodeConverter.convert(
-            re.sub(
-                Milestone.REGEX, "", self.source if self.error is None else self.error
-            )
-        )
-
     def xml(self) -> str:
         attrs = []
 
@@ -97,8 +97,7 @@ class Word:
             if type(self.tagset) is not Tagset:
                 attrs.append(f'msd="{self.tagset}"')
 
-        if self.norm is not None:
-            attrs.append(f'norm="{self.norm}"')
+        attrs.append(f'norm="{self.norm}"')
         if self.lemma is not None:
             attrs.append(f'lemma="{self.lemma}"')
 

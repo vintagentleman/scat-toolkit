@@ -1,5 +1,7 @@
 # scat-toolkit
 
+[![CI](https://github.com/vintagentleman/scat-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/vintagentleman/scat-toolkit/actions/workflows/ci.yml)
+
 Tooling for the **SCAT corpus** — the *Санкт-Петербургский корпус агиографических текстов* (St Petersburg Corpus of Hagiographic Texts), a historical corpus of Old Russian / Church Slavonic hagiography (saints' *vitae* and encomia, 15th–17th c.) developed at the Department of Mathematical Linguistics, St Petersburg State University.
 
 This repository holds the **processing tools**, not the texts. The corpus content itself — raw transliterated manuscripts and their morphological/structural annotation — lives in the companion repository [`scat-content`](https://github.com/vintagentleman/scat-content), included here as a git submodule.
@@ -134,7 +136,11 @@ Linting and formatting use [ruff](https://docs.astral.sh/ruff/); tests use [pyte
 uv run ruff check       # lint
 uv run ruff format      # format
 uv run pytest           # run the tests
-uv run ty check src     # type-check (advisory, not enforced in CI)
+uv run ty check src     # type-check (enforced in CI)
 ```
 
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/), enforced by [commitizen](https://commitizen-tools.github.io/commitizen/) via the `commit-msg` hook.
+
+## License
+
+Released under the [MIT License](LICENSE).

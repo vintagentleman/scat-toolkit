@@ -6,9 +6,9 @@ from models.row import WordRow
 
 
 def lemma_of(columns):
-    word = WordRow("DmPrlc", columns).word
-    word.norm = Normalizer.normalize(word)
-    return lemmatizer_factory(word).lemmatize(word)
+    parsed = WordRow("DmPrlc", columns).parsed_word
+    norm = Normalizer.normalize(parsed)
+    return lemmatizer_factory(parsed).lemmatize(parsed, norm)
 
 
 @pytest.mark.parametrize(

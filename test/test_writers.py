@@ -4,14 +4,17 @@ from components.lemmatizer import lemmatizer_factory
 from components.normalizer.normalizer import Normalizer
 from components.writer import writer_factory
 from models.row import WordRow
+from models.word import Word
 
 TEI_NS = {"t": "http://www.tei-c.org/ns/1.0"}
 
 
 def build_row(columns):
     row = WordRow("DmPrlc", columns)
-    row.word.norm = Normalizer.normalize(row.word)
-    row.word.lemma = lemmatizer_factory(row.word).lemmatize(row.word)
+    parsed = row.parsed_word
+    norm = Normalizer.normalize(parsed)
+    lemma = lemmatizer_factory(parsed).lemmatize(parsed, norm)
+    row.word = Word(parsed, norm, lemma)
     return row
 
 

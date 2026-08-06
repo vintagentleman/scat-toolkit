@@ -18,7 +18,7 @@ dev = [
     "pytest>=8",
     "ty",
     "pre-commit>=4.6.1",
-    "commitizen>=4.16.5",
+    "commitizen>=4.17.0",
 ]
 
 [tool.uv]

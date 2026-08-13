@@ -17,7 +17,7 @@ dev = [
     "ruff>=0.16.0",
     "pytest>=8",
     "ty",
-    "pre-commit>=4.6.1",
+    "pre-commit>=4.6.2",
     "commitizen>=4.16.5",
 ]
 

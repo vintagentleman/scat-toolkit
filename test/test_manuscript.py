@@ -2,7 +2,7 @@ from models.manuscript import Manuscript
 
 
 def make_manuscript():
-    return Manuscript(title="Test", page=1, column="", line=1)
+    return Manuscript(title="Test", page=1, column="", line=1, century=16)
 
 
 def test_chunk_id_setter_sets_chunk_id():

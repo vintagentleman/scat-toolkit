@@ -112,8 +112,6 @@ uv run python src/tokenizer.py "AKush-EvSzh.txt"
 uv run python src/converter.py -m tt -p generated/tokenizer "AKush-EvSzh.tsv"
 ```
 
-In both cases the files are written to `generated/converter/tt/*.tt`. The writer determines the `morphology` and `text_structure` document attributes from the actual input rows; manuscript titles and centuries come from `resources/manuscripts.yaml`.
-
 ### 3. `annotator.py` — semi-automatic morphological annotation
 
 Given a tokenised text and a precedent shelf (from `converter.py -m pkl`), produces an Excel workbook that pre-fills unambiguous analyses and offers ambiguous ones as colour-coded dropdown lists, splitting the work across a number of annotators. Built for the department's annotation practicum.

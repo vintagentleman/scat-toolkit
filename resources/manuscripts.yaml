@@ -1,121 +1,145 @@
 ---
 AntSij: !Manuscript
   title: Житие Антония Сийского
+  century: 16
   page: 73
   column: ''
   line: 1
 ASvir: !Manuscript
   title: Житие Александра Свирского
+  century: 16
   page: 442
   column: a
   line: 1
 CrlNvz: !Manuscript
   title: Житие Кирилла Новоезерского
+  century: 17
   page: -25
   column: ''
   line: 1
 DGlush: !Manuscript
   title: Житие Дионисия Глушицкого
+  century: 16
   page: 22
   column: ''
   line: 1
 DmPrlc: !Manuscript
   title: Житие Димитрия Прилуцкого
+  century: 16
   page: 201
   column: ''
   line: 1
 GrPelsh: !Manuscript
   title: Житие Григория Пельшемского
+  century: 16
   page: 301
   column: ''
   line: 1
 KrnKml: !Manuscript
   title: Житие Корнилия Комельского
+  century: 17
   page: 68
   column: ''
   line: 1
 PObn: !Manuscript
-  title: Житие Павла Обнорского (житие)
+  title: Житие преподобного Павла Обнорского (житие)
+  century: 16
   page: 487
   column: ''
   line: 1
 PObn-m: !Manuscript
-  title: Житие Павла Обнорского (чудеса)
+  title: Житие преподобного Павла Обнорского (чудеса)
+  century: 16
   page: -37
   column: ''
   line: 19
 SrgNurm: !Manuscript
-  title: Житие Сергия Нуромского
+  title: Житие преподобного Сергия Нуромского
+  century: 16
   page: 89
   column: ''
   line: 1
 AKush: !Manuscript
   title: Житие Александра Куштского
+  century: 17
   page: 371
   column: ''
   line: 1
 AKush-EvSzh: !Manuscript
   title: Житие Александра Куштского и Евфимия Сянжемского
+  century: 18
   page: 14
   column: ''
   line: 1
 GrsVlg: !Manuscript
   title: Житие Герасима Вологодского
+  century: 18
   page: 219
   column: ''
   line: 1
 IgnVlg: !Manuscript
   title: Житие Игнатия Вологодского
+  century: 18
   page: 182
   column: ''
   line: 1
 IgnLm: !Manuscript
   title: Житие Игнатия Ломского
+  century: 18
   page: 34
   column: ''
   line: 1
 IoaKam: !Manuscript
   title: Житие Иоасафа Каменского
+  century: 17
   page: 1
   column: ''
   line: 1
 KsUgl: !Manuscript
   title: Житие Кассиана Угличского
+  century: 17
   page: 62
   column: ''
   line: 1
 AndTtm: !Manuscript
   title: Житие Андрея Тотемского
+  century: 18
   page: 1
   column: ''
   line: 1
 ArsKml: !Manuscript
   title: Житие Арсения Комельского
+  century: 18
   page: 126
   column: ''
   line: 1
 InnKml: !Manuscript
   title: Житие Иннокентия Комельского
+  century: 18
   page: 205
   column: ''
   line: 1
 StKml: !Manuscript
   title: Житие Стефана Комельского
+  century: 17
   page: 363
   column: ''
   line: 1
 ThdTtm: !Manuscript
   title: Житие Феодосия Тотемского
+  century: 18
   page: -51
   column: ''
   line: 16
 VsTix: !Manuscript
   title: Житие Вассиана Тиксненского (житие и чудеса 1–8)
+  century: 18
   page: 35
   column: ''
   line: 1
 VsTix-m: !Manuscript
   title: Житие Вассиана Тиксненского (чудеса 9–29)
+  century: 18
   page: -64
   column: ''
   line: 21

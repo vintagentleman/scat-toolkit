@@ -96,6 +96,21 @@ Output: `generated/converter/<mode>/<manuscript>.<mode>`.
 - **`xml`** — TEI P5, structured for import into [TXM](https://txm.gitpages.huma-num.fr/textometrie/) (XTZ profile). Each word is a `<w>` carrying its surface form, normalised form, morphological tag string, and lemma. The publication format.
 - **`txt`** — plain running text in Church Slavonic Unicode (surface forms only).
 - **`pkl`** — a `shelve` database mapping each normalised form to its attested analyses. Not an end product: it is the "precedent" store consumed by `annotator.py`. Unlike the other modes it is keyed by date and merges all input documents into one shelf.
+- **`tt`** — six-column TreeTagger data (`token`, `pos`, `msd`, `lemma`, `norm`, `xml:id`) with document metadata and structural spans, ready for Annatto's `treetagger` importer and downstream ANNIS import.
+
+For annotated documents, prefer combined annotation where it is available:
+
+```sh
+uv run python src/converter.py -m tt -p scat-content/annotation/morphological
+uv run python src/converter.py -m tt -p scat-content/annotation/combined
+```
+
+For raw documents without morphological annotation, tokenise first and convert the generated TSV:
+
+```sh
+uv run python src/tokenizer.py "AKush-EvSzh.txt"
+uv run python src/converter.py -m tt -p generated/tokenizer "AKush-EvSzh.tsv"
+```
 
 ### 3. `annotator.py` — semi-automatic morphological annotation
 

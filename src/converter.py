@@ -52,7 +52,7 @@ class Text:
 @click.option(
     "--mode",
     "-m",
-    type=click.Choice(["txt", "tsv", "pkl", "xml"]),
+    type=click.Choice(["txt", "tsv", "pkl", "xml", "tt"]),
     default="xml",
     help="Conversion output format",
 )

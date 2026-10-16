@@ -113,13 +113,16 @@ The important structural fact is that **each format renders morphology independe
 | `xml` | TEI P5 (TXM/XTZ profile) | `Tagset.__str__` (the `@ana`/`msd` attribute) |
 | `txt` | plain Unicode running text | none (surface forms only) |
 | `pkl` | `shelve` database, keyed by normalised form | `Pickler`'s own positional layout |
+| `tt` | TreeTagger columns and structural spans for Annatto | `TreeTaggerWriter`'s direct row serialisation |
 
-`tsv` and `xml` are the formats in practical use.
+`tsv`, `xml`, and `tt` are the formats in practical use.
 
 The `xml` writer post-processes its output through `XMLProcessor` on close (merging adjacent numerals and proper-name elements, pretty-printing).
 
+The `tt` writer performs the corresponding numeral/name grouping directly on row events, without creating an intermediate TEI document. Page and line milestones and correction notes are omitted, matching the former `TEI → tei-to-tt` conversion. Its six columns are `token`, `pos`, `msd`, `lemma`, `norm`, and `xml:id`.
+
 ## Resources
 
-`resources/manuscripts.yaml` maps manuscript IDs to `!Manuscript` objects (`src/models/manuscript.py`), each holding a title and the starting page/column/line used to number the output. The class is a `yaml.YAMLObject`; importing it registers the `!Manuscript` tag, which is why `data/manuscripts.py` imports it for its side effect. Its `token_id` and `chunk_id` are auto-incrementing properties — reading one advances the counter — so writers rely on the order in which they touch a manuscript.
+`resources/manuscripts.yaml` maps manuscript IDs to `!Manuscript` objects (`src/models/manuscript.py`), each holding a title, century, and the starting page/column/line used to number the output. The class is a `yaml.YAMLObject`; importing it registers the `!Manuscript` tag, which is why `data/manuscripts.py` imports it for its side effect. Its `token_id` and `chunk_id` are auto-incrementing properties — reading one advances the counter — so writers rely on the order in which they touch a manuscript.
 
 `resources/tagset_clusters.json` lists sets of morphologically syncretic tag vectors; the annotator uses it to expand one analysis into all of a form's possible readings.

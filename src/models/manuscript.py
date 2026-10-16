@@ -11,6 +11,7 @@ class Manuscript(YAMLObject):
     page: int
     column: str
     line: int
+    century: int
 
     # ID counters
     _token_id: int = 0

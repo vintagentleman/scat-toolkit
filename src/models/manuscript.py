@@ -17,6 +17,10 @@ class Manuscript(YAMLObject):
     _token_id: int = 0
     _chunk_id: int = 0
 
+    def __setstate__(self, state):
+        # yaml.Loader bypasses __init__; calling it makes a missing field fail at load time
+        self.__init__(**state)
+
     @property
     def token_id(self):
         self._token_id += 1

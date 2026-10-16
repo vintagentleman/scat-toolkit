@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import List
+from xml.dom.minidom import Document
 
 from lxml import etree  # ty: ignore[unresolved-import]
 
@@ -39,7 +40,7 @@ class XMLWriter(Writer):
         super().write_chunk(chunk)
         self.stream.feed("</s>")
 
-    def __exit__(self, exc_type, exc_value, exc_traceback):
+    def document(self) -> Document:
         self.stream.feed(
             """
                         </ab>
@@ -51,10 +52,12 @@ class XMLWriter(Writer):
 
         root = self.stream.close()
 
+        return XMLProcessor(etree.tostring(root, encoding="utf-8")).run()
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        if exc_type is not None:
+            return
+
+        text = self.document().toprettyxml(indent="  ", encoding="utf-8").decode()
         with self.path.open(mode="w", encoding="utf-8") as fileobject:
-            fileobject.write(
-                XMLProcessor(etree.tostring(root, encoding="utf-8"))
-                .run()
-                .toprettyxml(indent="  ", encoding="utf-8")
-                .decode()
-            )
+            fileobject.write(text)

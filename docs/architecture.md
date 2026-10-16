@@ -113,13 +113,13 @@ The important structural fact is that **each format renders morphology independe
 | `xml` | TEI P5 (TXM/XTZ profile) | `Tagset.__str__` (the `@ana`/`msd` attribute) |
 | `txt` | plain Unicode running text | none (surface forms only) |
 | `pkl` | `shelve` database, keyed by normalised form | `Pickler`'s own positional layout |
-| `tt` | TreeTagger columns and structural spans for Annatto | `TreeTaggerWriter`'s direct row serialisation |
+| `tt` | TreeTagger columns and structural spans for Annatto | `Tagset.__str__`, read back from the `xml` writer's TEI |
 
 `tsv`, `xml`, and `tt` are the formats in practical use.
 
 The `xml` writer post-processes its output through `XMLProcessor` on close (merging adjacent numerals and proper-name elements, pretty-printing).
 
-The `tt` writer performs the corresponding numeral/name grouping directly on row events, without creating an intermediate TEI document. Page and line milestones and correction notes are omitted, matching the former `TEI → tei-to-tt` conversion. Its six columns are `token`, `pos`, `msd`, `lemma`, `norm`, and `xml:id`.
+The `tt` writer subclasses the `xml` writer: it builds the same TEI document and runs the same `XMLProcessor` pass, then writes the result as TreeTagger lines instead of pretty-printing it. Page and line milestones, correction notes and editor-inserted words (an empty erroneous reading, `~ <…>`) are omitted, matching the former `TEI → tei-to-tt` conversion. Its six columns are `token`, `pos`, `msd`, `lemma`, `norm`, and `xml:id`.
 
 ## Resources
 

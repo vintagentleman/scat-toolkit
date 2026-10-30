@@ -78,6 +78,62 @@ class Annotator:
         # Добавляем пустые колонки в конец
         return [tagset + [""] * (6 - len(tagset)) for tagset in tagsets]
 
+    def _write_row(self, sheet, i: int, line: tuple) -> bool:
+        if not all(len(cell) == 0 for cell in line[1:]):
+            # Если колонок больше одной, то это цифирь
+            sheet.write(i, 0, line[0], self.styles["correct"])
+            sheet.write(i, 1, line[1])
+            return False
+
+        sheet.write(i, 0, line[0])
+
+        if line[0].startswith("<"):  # Skip XML words
+            return False
+
+        parsed = WordRow(self.text.stem, list(map(str.strip, line))).parsed_word
+
+        if parsed is None:  # Skip non-word rows
+            return False
+
+        norm = Normalizer.normalize(parsed)
+
+        if norm not in self.pickle:  # Skip words whose norm isn't in the shelf
+            return False
+
+        tagsets = self._transform_tagsets_using_clusters(norm)
+
+        # Если разбор один, то помечаем его и не учитываем при подсчёте
+        if len(tagsets) == 1:
+            sheet.write(
+                i,
+                0,
+                line[0],
+                self.styles["correct"] if tagsets[0][0] != "гл" else None,
+            )
+            sheet.write_row(i, 1, tagsets[0])
+            return True
+
+        # Если нет, то выделяем неоднозначные позиции
+        for j, col in enumerate(zip(*tagsets), start=1):
+            # Если конфликтов нет, то просто записываем
+            if col.count(col[0]) == len(col):
+                sheet.write(i, j, col[0])
+            # Конфликты выделяем и отображаем все опции
+            else:
+                sheet.write_blank(i, j, None, self.styles["ambiguous"])
+                sheet.data_validation(
+                    i,
+                    j,
+                    i,
+                    j,
+                    {
+                        "validate": "list",
+                        "source": list(dict.fromkeys(col)),
+                        "show_error": False,
+                    },
+                )
+        return False
+
     def run(self, students: int, workload: int, offset: int):
         with open(self.text, "r") as f:
             lines = f.readlines()[offset:]
@@ -89,63 +145,8 @@ class Annotator:
             limit = workload
 
             for i, line in enumerate(lines):
-                if all(len(cell) == 0 for cell in line[1:]):
-                    sheet.write(i, 0, line[0])
-
-                    if line[0].startswith("<"):  # Skip XML words
-                        continue
-
-                    parsed = WordRow(
-                        self.text.stem, list(map(str.strip, line))
-                    ).parsed_word
-
-                    if parsed is None:  # Skip non-word rows
-                        continue
-
-                    norm = Normalizer.normalize(parsed)
-
-                    # Skip words whose norm isn't in the shelf
-                    if norm in self.pickle:
-                        tagsets = self._transform_tagsets_using_clusters(norm)
-
-                        # Если разбор один, то помечаем его и не учитываем при подсчёте
-                        if len(tagsets) == 1:
-                            sheet.write(
-                                i,
-                                0,
-                                line[0],
-                                self.styles["correct"]
-                                if tagsets[0][0] != "гл"
-                                else None,
-                            )
-                            sheet.write_row(i, 1, tagsets[0])
-                            limit += 1
-                        # Если нет, то выделяем неоднозначные позиции
-                        else:
-                            for j, col in enumerate(zip(*tagsets), start=1):
-                                # Если конфликтов нет, то просто записываем
-                                if col.count(col[0]) == len(col):
-                                    sheet.write(i, j, col[0])
-                                # Конфликты выделяем и отображаем все опции
-                                else:
-                                    sheet.write_blank(
-                                        i, j, None, self.styles["ambiguous"]
-                                    )
-                                    sheet.data_validation(
-                                        i,
-                                        j,
-                                        i,
-                                        j,
-                                        {
-                                            "validate": "list",
-                                            "source": list(dict.fromkeys(col)),
-                                            "show_error": False,
-                                        },
-                                    )
-                # Если колонок больше одной, то это цифирь
-                else:
-                    sheet.write(i, 0, line[0], self.styles["correct"])
-                    sheet.write(i, 1, line[1])
+                if self._write_row(sheet, i, line):
+                    limit += 1
 
                 if i + 1 == limit:
                     break
